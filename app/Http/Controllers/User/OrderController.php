@@ -15,22 +15,40 @@ class OrderController extends Controller
     // get user's orders.
     public function index(Request $request)
     {
-         $validated = $request->validate([
+    $validated = $request->validate([
         'user_id' => 'required|integer|exists:users,id'
-        ]);
+    ]);
 
-        $orders = Order::with('orderItems.product') 
-            ->where('user_id', $validated['user_id'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $orders = Order::with(['orderItems.product', 'orderItems.color', 'orderItems.size'])
+        ->where('user_id', $validated['user_id'])
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'total' => $order->total,
+                'status' => $order->status,
+                'created_at' => $order->created_at,
+                'order_items' => $order->orderItems->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'product_name' => $item->product->name,
+                'product_price' => $item->product->price,
+                'quantity' => $item->quantity,
+                'color' => $item->color ? $item->color->name : null,
+                'size' => $item->size ? $item->size->name : null,
+                ];
+            })
+            ];
+        });
 
-        return response()->json([
-            'success' => true,
-            'orders' => $orders,
-            'orders_count' => $orders->count(),
-            'message' => 'Orders retrieved successfully'
-        ], 200);
-    }
+    return response()->json([
+        'success' => true,
+        'orders' => $orders,
+        'orders_count' => $orders->count(),
+        'message' => 'Orders retrieved successfully'
+    ], 200);
+}
     /**
      * create new order
      */

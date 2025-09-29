@@ -38,4 +38,4 @@ Route::apiResource('orders', OrderController::class);
 
 
 // cart routes
-Route::apiResource('carts', Cart::class)->only(['index','show']);
+Route::apiResource('carts', CartController::class)->only(['index','show']);

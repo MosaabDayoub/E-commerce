@@ -44,7 +44,7 @@ class CartController extends Controller
     {
          $cart = Cart::with([
         'cartItems.product:id,name,description,category_id,price',
-        'cartItems.color:id,name', 
+        'cartItems.color:name', 
         'cartItems.size:id,name'
         ])
         ->where('user_id', $user_id)

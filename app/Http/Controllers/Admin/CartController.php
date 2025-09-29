@@ -14,6 +14,7 @@ class CartController extends Controller
      */
     public function index()
     {
+        
         $carts = Cart::with([
         'cartItems.product.colors',
         'cartItems.product.sizes',
