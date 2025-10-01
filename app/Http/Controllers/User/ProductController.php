@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\ProductRequest;
 
 
 class ProductController extends Controller
@@ -12,18 +13,9 @@ class ProductController extends Controller
     /**
      * get products with filltering
      */
-    public function index(Request $request)
+    public function index(ProductRequest $request)
     {
-       $request->validate([
-        'colors' => 'sometimes|array',
-        'colors.*' => 'integer|exists:colors,id',
-        'sizes' => 'sometimes|array', 
-        'sizes.*' => 'integer|exists:sizes,id',
-        'min_price' => 'sometimes|numeric|min:0',
-        'max_price' => 'sometimes|numeric|min:0',
-        'category_id' => 'sometimes|integer|exists:categories,id',
-        ]);
-
+        
         //build the main query
         $query = Product::with([
             'category:id,name',
@@ -93,10 +85,8 @@ class ProductController extends Controller
     }
 
     // search about specified resource
-    public function search(Request $request){
-          $request->validate([
-             'search' => 'required|string|max:100'
-             ]);
+    public function search(ProductRequest $request){
+            
             $product = Product::where('name','like',$request->search . '%')
             ->limit(50)
             ->get();

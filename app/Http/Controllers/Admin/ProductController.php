@@ -3,26 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request\Admin;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ProductRequest;
 
 class ProductController extends Controller
 {
     /**
      * get products with filltering
      */
-    public function index(Request $request)
+    public function index(ProductRequest $request)
     {
-       $request->validate([
-        'colors' => 'sometimes|array',
-        'colors.*' => 'integer|exists:colors,id',
-        'sizes' => 'sometimes|array', 
-        'sizes.*' => 'integer|exists:sizes,id',
-        'min_price' => 'sometimes|numeric|min:0',
-        'max_price' => 'sometimes|numeric|min:0',
-        'category_id' => 'sometimes|integer|exists:categories,id',
-        ]);
-
         //build the main query
         $query = Product::with([
             'category:id,name',
@@ -73,33 +64,34 @@ class ProductController extends Controller
     }
     
     /**
-     * Store a newly \product.
+     * Store a newly product.
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        $request->validate([
-            'name'=> 'bail|required|unique:products,name',
-            'description' =>'required|nullable|string|max:1000',
-            'price' => 'required|numeric|min:0'
-        ]);  
+        $validated = $request->validated();
+
         $product = Product::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price, 
-            'category_id' => $request->category_id,
-    ]);
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'price' => $validated['price'], 
+            'category_id' => $validated['category_id'],
+        ]);
 
-    // add colors
-    if ($request->has('colors')) {
-        $product->colors()->attach($request->colors);
-    }
+        // add colors
+        if ($request->has('colors')) {
+            $product->colors()->attach($validated['colors']);
+        }
 
-    // add sizes
-    if ($request->has('sizes')) {
-        $product->sizes()->attach($request->sizes);
-    }
+        // add sizes
+        if ($request->has('sizes')) {
+            $product->sizes()->attach($validated['sizes']);
+        }
 
-        return response()->json(['message' => 'product created successfully'], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'product created successfuly',
+            'data' => $product
+        ],200);
     }
 
     /**
@@ -107,33 +99,41 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {         
-        return response()->json($product, 200); 
+        return response()->json([
+            'success' => true,
+            'message' => 'data retrived successfuly',
+            'data' => $product
+        ],200); 
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductRequest $request, Product $product)
     {
-         $request->validate([
-            'name'=> 'bail|required|Unique:products,name,',
-            'description' =>'required|nullable|string|max:1000',
-            'price' => 'required|numeric|min:0'
+        $validated = $request->validated();
+
+        $product->update([
+        'name' => $validated['name'],
+        'description' => $validated['description'],
+        'price' => $validated['price'], 
+        'category_id' => $validated['category_id'],
         ]);
 
-        $data = $request->all();
-
-        $product->update($data);
-
         if ($request->has('colors')) {
-            $product->colors()->sync($request->colors);
+            $product->colors()->sync($validated['colors']);
         }
 
         if ($request->has('sizes')) {
-            $product->sizes()->sync($request->sizes);
+            $product->sizes()->sync($validated['sizes']);
         }
 
-        return response()->json($product->load(['colors', 'sizes']));
+        return response()->json([
+            'success' => true,
+            'message' => 'product updated successfuly',
+            'data' => $product->load(['colors', 'sizes'])
+        ],200);
+        
     }
 
     /**
@@ -146,39 +146,34 @@ class ProductController extends Controller
     }
 
    // search about specified resource
-    public function search(Request $request){
-        
-        $product = Product::where('name','like',$request->search . '%')->get();
+    public function search(ProductRequest $request){
+
+        $validated = $request->validated();
+        $product = Product::where('name','like',$validated['search'] . '%')->get();
 
          return response()->json($product, 200);
     }
 
-    // add color to product's colors
-    public function attachColors(Request $request, $productId)
+    // add color to product 
+    public function addColorsToProduct(ProductRequest $request, $productId)
     {
-        $request->validate([
-            'colors' => 'required|array',
-            'colors.*' => 'exists:colors,id'
-        ]);
+        $validated = $request->validated();
 
         $product = Product::findOrFail($productId);
-        $product->colors()->attach($request->colors);
+        $product->colors()->syncWithoutDetaching($validated['colors']);
 
         return response()->json([
             'message' => 'Colors added successfuly',
             'colors' => $product->colors
         ]);
     }
-    // remove color of product's colors
-    public function detachColors(Request $request, $productId)
+    // remove color of product
+    public function removeColorsFromProduct(ProductRequest $request, $productId)
     {
-        $request->validate([
-            'colors' => 'required|array',
-            'colors.*' => 'exists:colors,id'
-        ]);
+        $validated = $request->validated();
 
         $product = Product::findOrFail($productId);
-        $product->colors()->detach($request->colors);
+        $product->colors()->detach($validated['colors']);
 
         return response()->json([
             'message' => 'Product colors have been removed',
@@ -186,67 +181,31 @@ class ProductController extends Controller
         ]);
     }
 
-    public function syncColors(Request $request, $productId)
-    {
-        $request->validate([
-            'colors' => 'required|array',
-            'colors.*' => 'exists:colors,id'
-        ]);
-
-        $product = Product::findOrFail($productId);
-        $product->colors()->sync($request->colors);
-
-        return response()->json([
-            'message' => 'Product colors have been updated',
-            'colors' => $product->colors
-        ]);
-    }
-
     // add size to product's sizes
-    public function attachSizes(Request $request, $productId)
+    public function addSizesToProduct(ProductRequest $request, $productId)
     {
-        $request->validate([
-            'sizes' => 'required|array',
-            'sizes.*' => 'exists:sizes,id'
-        ]);
+        $validated = $request->validated();
 
         $product = Product::findOrFail($productId);
-        $product->sizes()->attach($request->sizes);
+        $product->sizes()->syncWithoutDetaching($validated['sizes']);
         return response()->json([
             'message' => 'Product sizes have been updated',
-            'colors' => $product-> sizes
+            'sizes' => $product-> sizes
         ]);
     }
 
     // remove size to product's sizes
-    public function detachSizes(Request $request, $productId)
+    public function removeSizesFromProduct(ProductRequest $request, $productId)
     {
-        $request->validate([
-            'sizes' => 'required|array',
-            'sizes.*' => 'exists:sizes,id'
-        ]);
+        $validated = $request->validated();
 
         $product = Product::findOrFail($productId);
-        $product->sizes()->detach($request->sizes);
+        $product->sizes()->detach($validated['sizes']);
+        
         return response()->json([
             'message' => 'Product sizes have been removed',
-            'colors' => $product-> sizes
+            'sizes' => $product-> sizes
         ]);
     }
 
-    public function syncsizes(Request $request, $productId)
-    {
-        $request->validate([
-            'sizes' => 'required|array',
-            'sizes.*' => 'exists:sizes,id'
-        ]);
-
-        $product = Product::findOrFail($productId);
-        $product->sizes()->sync($request->sizes);
-
-        return response()->json([
-            'message' => 'Product sizes have been updated',
-            'colors' => $product->sizes
-        ]);
-    }
 }

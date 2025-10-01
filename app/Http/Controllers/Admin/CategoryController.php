@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Category;
-use Illuminate\Http\Request;
-use App\Http\Requests\CategoryRequest;
+use App\Http\Requests\Admin\CategoryRequest;
+use Illuminate\Http\Request\Admin;
 use App\Http\Controllers\Controller;
 
 
@@ -25,6 +25,8 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request)
     {
+        $validated = $request->validated();
+
         Category::create([
             'name' => $request->name,
             'description' => $request->email,
@@ -45,9 +47,12 @@ class CategoryController extends Controller
      */
     public function update(CategoryRequest $request, Category $category)
     {
-        $data = $request->all();
+        $validated = $request->validated();
 
-        $category->update($data);
+        $category->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
 
         return response()->json(['message' => 'category created successfully'], 201);
     }
@@ -58,13 +63,15 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return response()->json(['message' => 'category deleted successfully'], 200);
     }
 
     // search about specified category
-        public function search(Request $request){
+        public function search(CategoryRequest $request){
+        
+        $validated = $request->validated();
 
-        $category = Category::where('name','like',$request->search . '%')->get();
+        $category = Category::where('name','like',$validated['search'] . '%')->get();
 
          return response()->json($category, 200);
 }

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
+
+use App\Http\Requests\Admin\OrderRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Cart;
-use App\Models\CartItem;
+
 
 class OrderController extends Controller
 {
@@ -22,11 +21,11 @@ class OrderController extends Controller
         ])
         ->orderBy('created_at', 'desc')
         ->get();  
-        return response()->json([
+        return response()->json(data: [
             'success' => true,
             'message' => 'data retrived successfuly',
             'data' => $orders
-        ],200); 
+        ],status: 200); 
     }
 
     /**
@@ -51,23 +50,21 @@ class OrderController extends Controller
     /**
      * update order status.
      */
-    public function update(Request $request, $order_id)
+    public function update(OrderRequest $request, $order_id)
     {
-         $request->validate([
-        'status' => 'sometimes|string|in:pending,approved,completed,cancelled',
-         ]);
+        $validated = $request->validated();
 
         $order = Order::findOrFail($order_id);
         
         $order->update([
-        'status' => $request->status
+        'status' => $validated['status']
         ]);
 
-        return response()->json([
+        return response()->json(data: [
             'success' => true,
             'message' => 'Order status updated successfully',
             'data' => $order
-        ], 200);
+        ], status: 200);
     }
 
     /**

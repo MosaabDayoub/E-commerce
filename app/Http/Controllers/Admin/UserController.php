@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\UserRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use App\Http\Requests\UserRequest;
+
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 
@@ -18,25 +19,19 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::get();
 
         return response()->json($users, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
+  
     /**
      * Store a newly created resource in storage.
      */
     public function store(UserRequest $request)
     {
-     
+        $validated = $request->validated();
+
         User::create([
 
             'name' => $request->name,
@@ -57,27 +52,33 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(UserRequest $request, User $user)
     {
-        $data = $request->all();
+        $validated = $request->validated();
+
+        $updateData = [
+            'name' => $validated['name'] ?? $user->name,
+            'email' => $validated['email'] ?? $user->email,
+        ];
 
         if (isset($data['password'])) {
         $data['password'] = Hash::make($data['password']);
-    }
+        }
 
-        $user->update($data);
+        $user->update($updateData);
 
-        return response()->json(['message' => 'user created successfully'], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'updated_at' => $user->updated_at
+            ]
+        ], 200);
 
     }
 
@@ -91,9 +92,11 @@ class UserController extends Controller
     }
 
     // search about specified resource
-   public function search( Request $request )
+   public function search(UserRequest $request)
 {
-    $user = User::where('name', 'like' , $request->search . '%')->get();
+    $validated = $request->validated();
+    
+    $user = User::where('name', 'like' , $validated['search'] . '%')->get();
     return response()->json($user, 200);
 }
 }

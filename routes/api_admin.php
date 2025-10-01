@@ -1,6 +1,10 @@
 <?php
 
+use Illuminate\Http\Request\Admin\ProductRequest;
+use Illuminate\Http\Admin\CategoryRequest;
+use Illuminate\Http\Admin\UserRequest;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -21,15 +25,13 @@ Route::post('products/search', [ProductController::class, 'search']);
 Route::resource('products',ProductController::class)->only(['index','show','update','store','destroy']);
 Route::prefix('products/{product}')->group(function () {
     Route::prefix('colors')->group(function () {
-        Route::post('/attach', [ProductController::class, 'attachColors']);
-        Route::post('/detach', [ProductController::class, 'detachColors']);
-        Route::post('/sync', [ProductController::class, 'syncColors']);
+        Route::post('/addColorsToProduct', [ProductController::class, 'addColorsToProduct']);
+        Route::post('/removeColorsFromProducts', [ProductController::class, 'removeColorsFromProduct']);
     });
     
     Route::prefix('sizes')->group(function () {
-        Route::post('/attach', [ProductController::class, 'attachSizes']);
-        Route::post('/detach', [ProductController::class, 'detachSizes']);
-        Route::post('/sync', [ProductController::class, 'syncSizes']);
+        Route::post('/addSizesToProduct', [ProductController::class, 'addSizesToProduct']);
+        Route::post('/removeSizesFromProduct', [ProductController::class, 'removeSizesFromProduct']);
     });
 });
 
