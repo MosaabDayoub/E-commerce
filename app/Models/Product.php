@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Product extends Model
 {
@@ -31,6 +32,64 @@ class Product extends Model
 
      public function orderItems(){
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Scope for filter by category
+     */
+    public function scopeFilterByCategory(Builder $query, $categoryId)
+    {
+        return $query->when($categoryId, function($q) use ($categoryId) {
+            $q->where('category_id', $categoryId);
+        });
+    }
+
+    /**
+     * Scope for filter by price
+     */
+    public function scopeFilterByPrice(Builder $query, $minPrice = null, $maxPrice = null)
+    {
+        return $query->when($minPrice, function($q) use ($minPrice) {
+            $q->where('price', '>=', $minPrice);
+        })->when($maxPrice, function($q) use ($maxPrice) {
+            $q->where('price', '<=', $maxPrice);
+        });
+    }
+
+    /**
+     * Scope for filter by color
+     */
+    public function scopeFilterByColors(Builder $query, $colors)
+    {
+        return $query->when($colors, function($q) use ($colors) {
+            $q->whereHas('colors', function($colorQuery) use ($colors) {
+                $colorQuery->whereIn('colors.id', (array)$colors);
+            });
+        });
+    }
+
+    /**
+     * Scope for filter by size
+     */
+    public function scopeFilterBySizes(Builder $query, $sizes)
+    {
+        return $query->when($sizes, function($q) use ($sizes) {
+            $q->whereHas('sizes', function($sizeQuery) use ($sizes) {
+                $sizeQuery->whereIn('sizes.id', (array)$sizes);
+            });
+        });
+    }
+
+    /**
+     * Scope for all filters
+     */
+    public function scopeApplyFilters(Builder $query, array $filters)
+    {
+        return $query
+            ->filterByCategory($filters['category_id'] ?? null)
+            ->filterByPrice($filters['min_price'] ?? null, $filters['max_price'] ?? null)
+            ->filterByColors($filters['colors'] ?? null)
+            ->filterBySizes($filters['sizes'] ?? null);
     }
     
 }

@@ -5,7 +5,7 @@ namespace App\Http\Requests\User;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Helpers\ResponseHelper;
 
-class OrderRequest extends FormRequest
+class CartRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,30 +17,25 @@ class OrderRequest extends FormRequest
         $methodName = $this->route()->getActionMethod();
     
         return match($methodName) {
-            'index' => $this->getIndexRules(),
             'store' => $this->getStoreRules(),
-            'update' => $this->getUpdateRules(),
-            'removeItem' => $this->getRemoveItemRules()
+            'updateItem' => $this->getUpdateRules(),
+            'getCartCost' => $this->getCartCostRules()
         };
     }
 
-    // Rules for getting user's orders
-    private function getIndexRules(): array
-    {
-        return [
-            'user_id' => 'required|integer|exists:users,id'
-        ];
-    }
-
-    // Rules for creating new order
+    // Rules for adding item to cart
     private function getStoreRules(): array
     {
         return [
-            'user_id' => 'required|integer|exists:users,id'
+            'product_id' => 'required|integer|exists:products,id',
+            'color_id' => 'nullable|integer|exists:colors,id',
+            'size_id' => 'nullable|integer|exists:sizes,id',
+            'quantity' => 'required|integer|min:1|max:100',
+            'user_id' => 'sometimes|integer|exists:users,id'
         ];
     }
 
-    // Rules for updating order
+    // Rules for updating cart item
     private function getUpdateRules(): array
     {
         return [
@@ -51,11 +46,11 @@ class OrderRequest extends FormRequest
         ];
     }
 
-    // Rules for removing item from order
-    private function getRemoveItemRules(): array
+    // Rules for getting cart cost
+    private function getCartCostRules(): array
     {
         return [
-            'orderItem_id' => 'required|integer|exists:order_items,id'
+            'user_id' => 'required|integer|exists:users,id'
         ];
     }
 
@@ -63,12 +58,8 @@ class OrderRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // User messages
-            'user_id.required' => 'User ID is required',
-            'user_id.integer' => 'User ID must be an integer',
-            'user_id.exists' => 'The selected user does not exist',
-
             // Product messages
+            'product_id.required' => 'Product ID is required',
             'product_id.integer' => 'Product ID must be an integer',
             'product_id.exists' => 'The selected product does not exist',
 
@@ -81,14 +72,15 @@ class OrderRequest extends FormRequest
             'size_id.exists' => 'The selected size does not exist',
 
             // Quantity messages
+            'quantity.required' => 'Quantity is required',
             'quantity.integer' => 'Quantity must be an integer',
             'quantity.min' => 'Quantity must be at least 1',
             'quantity.max' => 'Quantity cannot exceed 100',
 
-            // Order item messages
-            'orderItem_id.required' => 'Order item ID is required',
-            'orderItem_id.integer' => 'Order item ID must be an integer',
-            'orderItem_id.exists' => 'The selected order item does not exist',
+            // User messages
+            'user_id.required' => 'User ID is required',
+            'user_id.integer' => 'User ID must be an integer',
+            'user_id.exists' => 'The selected user does not exist',
         ];
     }
 
@@ -96,11 +88,10 @@ class OrderRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'user_id' => 'user',
             'product_id' => 'product',
             'color_id' => 'color',
             'size_id' => 'size',
-            'orderItem_id' => 'order item',
+            'user_id' => 'user',
         ];
     }
 }

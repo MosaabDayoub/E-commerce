@@ -8,10 +8,10 @@ class Cart extends Model
 {   
     protected $fillable = ['user_id']; 
     public function user(){
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function cartItems(){
-        return $this->hasMany(CartItem::class,'cart_id');
+        return $this->hasMany(CartItem::class);
     }
 }

@@ -3,97 +3,78 @@
 namespace App\Http\Controllers\User;
 
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
-use App\Http\Requests\UserRequest;
+use App\Http\Requests\Admin\UserRequest;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-
+use App\Http\Resources\UserResource;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // get users.
     public function index()
     {
-        $users = User::all();
-
-        return response()->json($users, 200);
+        $users = User::withCount('orders')->paginate(10);
+        return ResponseHelper::success(UserResource::collection($users)); 
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * create user.
      */
     public function store(UserRequest $request)
     {
-     
-        User::create([
+        $validated = $request->validated();
 
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
         ]);
         
-        return response()->json(['message' => 'user created successfully'], 201);
+        return ResponseHelper::success(new UserResource($user),'User created successfully');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // get the specified user.
     public function show(User $user)
     {
+        $user->loadCount('orders');
         
-        return response()->json($user, 200); 
+        return ResponseHelper::success(new UserResource($user));  
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update the specified user.
     public function update(UserRequest $request, User $user)
     {
-        $data = $request->all();
+        $validated = $request->validated();
 
-        if (isset($data['password'])) {
-        $data['password'] = Hash::make($data['password']);
+        $updateData = [
+            'name' => $validated['name'] ?? $user->name,
+            'email' => $validated['email'] ?? $user->email,
+        ];
+
+        if (isset($validated['password'])) {
+            $updateData['password'] = $validated['password'];
+        }
+
+        $user->update($updateData);
+
+        $user->loadCount(['orders']);
+
+        return ResponseHelper::success(new UserResource($user),'User Updated successfully');
     }
 
-        $user->update($data);
-
-        return response()->json(['message' => 'user created successfully'], 201);
-
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Remove user.
     public function destroy(User $user)
     {
         $user->delete();
-        return response()->json(['message' => 'user deleted successfully'], 200);
+        return ResponseHelper::successMessage('user deleted successfully'); 
     }
 
-    // search about specified resource
-   public function search( Request $request )
-{
-    $user = User::where('name', 'like' , $request->search . '%')->get();
-    return response()->json($user, 200);
+     // search about specified resource
+     public function search(UserRequest $request){
+            
+        $users = User::where('name','like',$request->search . '%')
+        ->limit(50)
+        ->paginate(10);
+        return ResponseHelper::success(UserResource::collection($users)); 
 }
 }

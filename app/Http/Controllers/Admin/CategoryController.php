@@ -4,47 +4,43 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Category;
 use App\Http\Requests\Admin\CategoryRequest;
-use Illuminate\Http\Request\Admin;
 use App\Http\Controllers\Controller;
+use App\Helpers\ResponseHelper;
+use App\Http\Resources\CategoryResource;
 
 
 class CategoryController extends Controller
 {
-    /**
-     * get categories.
-     */
+    
+    // get categories.
     public function index()
     {
-        $categorys = Category::all();
+        $categories = Category::withCount('products')->get();
         
-        return response()->json($categorys, 200);
+        return ResponseHelper::success(CategoryResource::collection($categories)); 
     }
 
-    /**
-     * add new category.
-     */
+    // add new category.
     public function store(CategoryRequest $request)
     {
         $validated = $request->validated();
 
-        Category::create([
-            'name' => $request->name,
-            'description' => $request->email,
+        $category = Category::create([
+            'name' => $validated['name'],
+            'description' => $validated['description'],
         ]);
         
-        return response()->json(null, 200);
-    }
-    /**
-     * get specified category.
-     */
-    public function show(Category $category)
-    {
-        return response()->json($category, 200);
+        return ResponseHelper::success(new CategoryResource($category),'Category created successfully'); 
     }
 
-    /**
-     * Update specified category.
-     */
+    // get specified category.
+    public function show(Category $category)
+    {
+        $category->loadCount('products');
+        return ResponseHelper::success(new CategoryResource($category)); 
+    }
+
+    // Update specified category.
     public function update(CategoryRequest $request, Category $category)
     {
         $validated = $request->validated();
@@ -54,7 +50,7 @@ class CategoryController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
-        return response()->json(['message' => 'category created successfully'], 201);
+        return ResponseHelper::success(new CategoryResource($category,'Category updated successfully'));
     }
 
     /**
@@ -63,7 +59,8 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
-        return response()->json(['message' => 'category deleted successfully'], 200);
+
+        return ResponseHelper::successMessage('category deleted successfully');
     }
 
     // search about specified category
@@ -71,8 +68,8 @@ class CategoryController extends Controller
         
         $validated = $request->validated();
 
-        $category = Category::where('name','like',$validated['search'] . '%')->get();
+        $categories = Category::where('name','like',$validated['search'] . '%')->get();
 
-         return response()->json($category, 200);
+        return ResponseHelper::success(CategoryResource::collection($categories));
 }
 }

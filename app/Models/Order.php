@@ -8,10 +8,10 @@ class Order extends Model
 {
     protected $fillable = ['user_id','total'];
     public function user(){
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function orderItems(){
-        return $this->hasMany(OrderItem::class,'order_id');
+        return $this->hasMany(OrderItem::class);
     }
 }

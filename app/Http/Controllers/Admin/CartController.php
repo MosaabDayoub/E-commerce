@@ -2,46 +2,32 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
+
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
-use App\Models\CartItem;
+use App\Helpers\ResponseHelper;
+use App\Http\Resources\CartResource;
+use App\Http\Resources\CartItemResource;
+
 
 class CartController extends Controller
 {
-    /**
-     * get carts.
-     */
+    // get carts.
     public function index()
     {
         $carts = Cart::with([
         'cartItems.product.colors',
         'cartItems.product.sizes',
-        ]);
+        ])->paginate(10);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $carts
-        ],200); 
+        return ResponseHelper::success(CartResource::collection($carts)); 
     }
 
-    /**
-     * get user cart.
-     */
-    public function show(Cart $cart)
+    // get user cart.
+    public function show($userId)
     {
-        $cart = Cart::with([
-        'cartItems.product.colors',
-        'cartItems.product.sizes',
-        ]);
-        where('user_id',$user_id)->firstOrFail();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $cart
-        ],200); 
+        $cart = Cart::where('user_id',$userId)->first();
+        return ResponseHelper::success(new CartResource($cart)); 
     }
 
 }

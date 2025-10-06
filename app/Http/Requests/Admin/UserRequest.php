@@ -36,14 +36,12 @@ class UserRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'confirmed',
                 Password::min(8)
                     ->letters()
                     ->mixedCase()
                     ->numbers()
                     ->symbols()
             ],
-            'password_confirmation' => 'required|string|same:password',
         ];
     }
 

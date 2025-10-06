@@ -3,7 +3,7 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use App\Helpers\ResponseHelper;
 
 class ProductRequest extends FormRequest
 {

@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\ProductRequest;
+use App\Helpers\ResponseHelper;
+use App\Http\Resources\ProductResource;
 
 
 class ProductController extends Controller
@@ -14,56 +15,24 @@ class ProductController extends Controller
      * get products with filltering
      */
     public function index(ProductRequest $request)
-    {
-        
+    {   
         //build the main query
-        $query = Product::with([
+        $products = Product::with([
             'category:id,name',
             'colors:id,name',
             'sizes:id,name'
-        ])->select([ 
-            'id', 
-            'name', 
-            'price', 
-            'description', 
-            'category_id',
-        ]);
+        ])
+        ->applyFilters([
+            'category_id' => $request->category_id,
+            'min_price' => $request->min_price,
+            'max_price' => $request->max_price,
+            'colors' => $request->colors,
+            'sizes' => $request->sizes,
+        ])
+        ->paginate(10);
 
-        //filter by category
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        //filter by price
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        //filter by color
-        if ($request->filled('colors')) {
-            $query->whereHas('colors', function($q) use ($request) {
-                $q->whereIn('colors.id', $request->colors);
-            });
-        }
-
-        //filter by size
-        if ($request->filled('sizes')) {
-            $query->whereHas('sizes', function($q) use ($request) {
-                $q->whereIn('sizes.id', $request->sizes);
-            });
-        }
-        $products = $query->get(); 
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $products
-        ],200); 
-        
-    }
+    return ResponseHelper::success(ProductResource::collection($products));      
+}
 
     /**
      * get the specified product.
@@ -77,20 +46,16 @@ class ProductController extends Controller
             'category:id,name'
         ])->findOrFail($productId);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $product
-        ],200);
+        return ResponseHelper::success(new ProductResource($product));
     }
 
     // search about specified resource
     public function search(ProductRequest $request){
             
-            $product = Product::where('name','like',$request->search . '%')
+            $products = Product::where('name','like',$request->search . '%')
             ->limit(50)
-            ->get();
-            return response()->json($product, 200);
+            ->paginate(10);
+            return ResponseHelper::success(ProductResource::collection($products)); 
 }
 
 }

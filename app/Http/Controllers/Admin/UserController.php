@@ -5,55 +5,44 @@ namespace App\Http\Controllers\Admin;
 use App\Models\User;
 use App\Http\Requests\Admin\UserRequest;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
-
-use Illuminate\Http\Request;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-
+use App\Http\Resources\UserResource;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // get users.
     public function index()
     {
-        $users = User::get();
-
-        return response()->json($users, 200);
+        $users = User::withCount('orders')->paginate(10);
+        return ResponseHelper::success(UserResource::collection($users)); 
     }
 
-  
     /**
-     * Store a newly created resource in storage.
+     * create user.
      */
     public function store(UserRequest $request)
     {
         $validated = $request->validated();
 
-        User::create([
-
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
         ]);
         
-        return response()->json(['message' => 'user created successfully'], 201);
+        return ResponseHelper::success(new UserResource($user),'User created successfully');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // get the specified user.
     public function show(User $user)
     {
+        $user->loadCount('orders');
         
-        return response()->json($user, 200); 
+        return ResponseHelper::success(new UserResource($user));  
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update the specified user.
     public function update(UserRequest $request, User $user)
     {
         $validated = $request->validated();
@@ -63,40 +52,29 @@ class UserController extends Controller
             'email' => $validated['email'] ?? $user->email,
         ];
 
-        if (isset($data['password'])) {
-        $data['password'] = Hash::make($data['password']);
+        if (isset($validated['password'])) {
+            $updateData['password'] = $validated['password'];
         }
 
         $user->update($updateData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully',
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'updated_at' => $user->updated_at
-            ]
-        ], 200);
+        $user->loadCount('orders');
 
+        return ResponseHelper::success(new UserResource($user),'User updated successfully');
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Remove user.
     public function destroy(User $user)
     {
         $user->delete();
-        return response()->json(['message' => 'user deleted successfully'], 200);
+        return ResponseHelper::successMessage('user deleted successfully'); 
     }
 
     // search about specified resource
-   public function search(UserRequest $request)
-{
-    $validated = $request->validated();
-    
-    $user = User::where('name', 'like' , $validated['search'] . '%')->get();
-    return response()->json($user, 200);
+    public function search(UserRequest $request){
+            
+        $users = User::where('name','like',$request->search . '%')
+        ->limit(50)
+        ->paginate(10);
+        return ResponseHelper::success(UserResource::collection($users)); 
 }
 }

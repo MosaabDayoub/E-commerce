@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Product;
-use Illuminate\Http\Request\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductRequest;
+use App\Helpers\ResponseHelper;
+use App\Http\Resources\ProductResource;
 
 class ProductController extends Controller
 {
@@ -13,59 +14,26 @@ class ProductController extends Controller
      * get products with filltering
      */
     public function index(ProductRequest $request)
-    {
+    {   
         //build the main query
-        $query = Product::with([
+        $products = Product::with([
             'category:id,name',
             'colors:id,name',
             'sizes:id,name'
-        ])->select([ 
-            'id', 
-            'name', 
-            'price', 
-            'description', 
-            'category_id',
-        ]);
+        ])
+        ->applyFilters([
+            'category_id' => $request->category_id,
+            'min_price' => $request->min_price,
+            'max_price' => $request->max_price,
+            'colors' => $request->colors,
+            'sizes' => $request->sizes,
+        ])
+        ->paginate(10);
 
-        //filter by category
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        //filter by price
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-
-        //filter by color
-        if ($request->filled('colors')) {
-            $query->whereHas('colors', function($q) use ($request) {
-                $q->whereIn('colors.id', $request->colors);
-            });
-        }
-
-        //filter by size
-        if ($request->filled('sizes')) {
-            $query->whereHas('sizes', function($q) use ($request) {
-                $q->whereIn('sizes.id', $request->sizes);
-            });
-        }
-        $products = $query->get(); 
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $products
-        ],200); 
-        
+    return ResponseHelper::success(ProductResource::collection($products));      
     }
     
-    /**
-     * Store a newly product.
-     */
+    // Store a newly product.
     public function store(ProductRequest $request)
     {
         $validated = $request->validated();
@@ -87,28 +55,16 @@ class ProductController extends Controller
             $product->sizes()->attach($validated['sizes']);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'product created successfuly',
-            'data' => $product
-        ],200);
+        return ResponseHelper::success(new ProductResource($product),'Product created successfully');
     }
 
-    /**
-     * Display products of specified user.
-     */
+    // get specified product.
     public function show(Product $product)
-    {         
-        return response()->json([
-            'success' => true,
-            'message' => 'data retrived successfuly',
-            'data' => $product
-        ],200); 
+    {       
+        return ResponseHelper::success(new ProductResource($product));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update product.
     public function update(ProductRequest $request, Product $product)
     {
         $validated = $request->validated();
@@ -127,34 +83,28 @@ class ProductController extends Controller
         if ($request->has('sizes')) {
             $product->sizes()->sync($validated['sizes']);
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'product updated successfuly',
-            'data' => $product->load(['colors', 'sizes'])
-        ],200);
+        
+        return ResponseHelper::success(new ProductResource($product),'Product updated successfully');
         
     }
 
-    /**
-     * Remove product.
-     */
+    // Remove product.
     public function destroy(Product $product)
     {
         $product->delete();
-        return response()->json(['message' => 'product deleted successfully'], 200);
+        return ResponseHelper::successMessage('product deleted successfully'); 
     }
 
-   // search about specified resource
+    // search about specified resource
     public function search(ProductRequest $request){
 
         $validated = $request->validated();
-        $product = Product::where('name','like',$validated['search'] . '%')->get();
+        $products = Product::where('name','like',$validated['search'] . '%')->paginate(10);;
 
-         return response()->json($product, 200);
+        return ResponseHelper::success(ProductResource::collection($products));
     }
 
-    // add color to product 
+    // add colors to product 
     public function addColorsToProduct(ProductRequest $request, $productId)
     {
         $validated = $request->validated();
@@ -162,11 +112,9 @@ class ProductController extends Controller
         $product = Product::findOrFail($productId);
         $product->colors()->syncWithoutDetaching($validated['colors']);
 
-        return response()->json([
-            'message' => 'Colors added successfuly',
-            'colors' => $product->colors
-        ]);
+        return ResponseHelper::success(new ProductResource($product),'Colors added successfully');;
     }
+
     // remove color of product
     public function removeColorsFromProduct(ProductRequest $request, $productId)
     {
@@ -175,10 +123,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($productId);
         $product->colors()->detach($validated['colors']);
 
-        return response()->json([
-            'message' => 'Product colors have been removed',
-            'colors' => $product->colors
-        ]);
+        return ResponseHelper::success(new ProductResource($product),'Colors removed successfully');
     }
 
     // add size to product's sizes
@@ -188,10 +133,8 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($productId);
         $product->sizes()->syncWithoutDetaching($validated['sizes']);
-        return response()->json([
-            'message' => 'Product sizes have been updated',
-            'sizes' => $product-> sizes
-        ]);
+
+        return ResponseHelper::success(new ProductResource($product),'Sizes added successfully');
     }
 
     // remove size to product's sizes
@@ -202,10 +145,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($productId);
         $product->sizes()->detach($validated['sizes']);
         
-        return response()->json([
-            'message' => 'Product sizes have been removed',
-            'sizes' => $product-> sizes
-        ]);
+        return ResponseHelper::success(new ProductResource($product),'Sizes removed successfully');
     }
 
 }

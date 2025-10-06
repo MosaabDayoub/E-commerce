@@ -3,36 +3,35 @@
 namespace App\Http\Controllers\User;
 
 use App\Models\Category;
-use Illuminate\Http\Request;
-use App\Http\Requests\CategoryRequest;
+use App\Http\Requests\User\CategoryRequest;
 use App\Http\Controllers\Controller;
+use App\Helpers\ResponseHelper;
+use App\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // get categories
     public function index()
     {
-        $categorys = Category::all();
+        $categories = Category::withCount('products')->get();
         
-        return response()->json($categorys, 200);
+        return ResponseHelper::success(CategoryResource::collection($categories));
     }
     
-
-    /**
-     * Display the specified resource.
-     */
+    // get specified category.
     public function show(Category $category)
     {
-        return response()->json($category, 200);
+        $category->loadCount('products');
+        
+        return ResponseHelper::success(new CategoryResource($category));
     }
 
-    // search about specified resource
-    public function search(Request $request){
+    // search about specified category
+    public function search(CategoryRequest $request){
 
-    $category = Category::where('name','like',$request->search . '%')->get();
+    $categories = Category::where('name','like',$request->search . '%')->get();
 
-        return response()->json($category, 200);
+    return ResponseHelper::success(CategoryResource::collection($categories));
+    
     }
 }

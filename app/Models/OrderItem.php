@@ -8,15 +8,15 @@ class OrderItem extends Model
 {
     protected $fillable = ['order_id','product_id','color_id','size_id','quantity','price'];
     public function order(){
-        return $this->belongsTo(Order::class,'order_id');
+        return $this->belongsTo(Order::class);
     }
 
      public function product(){
-        return $this->belongsTo(Product::class,'product_id');
+        return $this->belongsTo(Product::class);
     }
 
     public function color(){
-        return $this->belongsTo(Color::class,'color_id');
+        return $this->belongsTo(Color::class);
     }
 
     public function size(){

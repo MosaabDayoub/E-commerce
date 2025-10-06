@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Helpers\ResponseHelper;
 use Illuminate\Validation\Rules\Password;
 
 class UserRequest extends FormRequest
@@ -36,14 +37,12 @@ class UserRequest extends FormRequest
             'password' => [
                 'required',
                 'string',
-                'confirmed',
                 Password::min(8)
                     ->letters()
                     ->mixedCase()
                     ->numbers()
                     ->symbols()
             ],
-            'password_confirmation' => 'required|string|same:password',
         ];
     }
 
