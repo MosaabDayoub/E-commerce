@@ -1,19 +1,15 @@
 <?php
-// app/Listeners/SendOrderNotification.php
 
 namespace App\Listeners;
 
 use App\Events\OrderCreated;
-use App\Mail\OrderCreatedAdminNotification;
-use Illuminate\Support\Facades\Mail;
+use App\Jobs\SendOrderEmailsJob;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendOrderNotification
+class SendOrderNotification implements ShouldQueue
 {
     public function handle(OrderCreated $event): void
     {
-
-        Mail::to('admin@example.com')->send(
-            new OrderCreatedAdminNotification($event->order)
-        );
+        SendOrderEmailsJob::dispatch($event->order);
     }
 }

@@ -51,11 +51,8 @@ class ResponseHelper
             'per_page' => $paginator->perPage(),
             'total' => $paginator->total(),
             'total_pages' => $paginator->lastPage(),
-            'has_more_pages' => $paginator->hasMorePages(),
             'next_page_url' => $paginator->nextPageUrl(),
             'prev_page_url' => $paginator->previousPageUrl(),
-            'first_item' => $paginator->firstItem(),
-            'last_item' => $paginator->lastItem(),
         ];
     }
 }

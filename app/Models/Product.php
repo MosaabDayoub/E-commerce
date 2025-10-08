@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
+use Astrotomic\Translatable\Translatable;
 
-class Product extends Model
+class Product extends Model implements TranslatableContract
 {
-     protected $fillable = [
-        'name',
-        'description',
-        "price",
-        "category_id"
-    ];
+    
+    use Translatable;
+
+    public $translatedAttributes = ['name', 'description'];
+    
+    protected $fillable = ['price','category_id'];
 
     public function category(){
         return $this->belongsTo(Product::class);
@@ -33,6 +35,8 @@ class Product extends Model
      public function orderItems(){
         return $this->hasMany(OrderItem::class);
     }
+    
+   
 
     /**
      * Scope for filter by category

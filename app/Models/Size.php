@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Size extends Model
 {
     protected $hidden = ['pivot'];
+    protected $fillable = ['name'];
     
      public function products(){
         return $this->belongsToMany(Product::class);

@@ -23,12 +23,17 @@ class CategoryController extends Controller
     // add new category.
     public function store(CategoryRequest $request)
     {
-        $validated = $request->validated();
 
-        $category = Category::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-        ]);
+        $category = new Category();
+
+        // add translations to arabic
+        $category->translateOrNew('ar')->name = $request->name_ar;
+        $category->translateOrNew('ar')->description = $request->description_ar;
+        
+        // add translations to english
+        $category->translateOrNew('en')->name = $request->name_en;
+        $category->translateOrNew('en')->description = $request->description_en;
+  
         
         return ResponseHelper::success(new CategoryResource($category),'Category created successfully'); 
     }
@@ -43,12 +48,13 @@ class CategoryController extends Controller
     // Update specified category.
     public function update(CategoryRequest $request, Category $category)
     {
-        $validated = $request->validated();
-
-        $category->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-        ]);
+        if ($request->has('name_ar')) {
+            $category->translateOrNew('ar')->name = $request->name_ar;
+        }
+     
+        if ($request->has('name_en')) {
+            $category->translateOrNew('en')->name = $request->name_en;
+        }
 
         return ResponseHelper::success(new CategoryResource($category,'Category updated successfully'));
     }

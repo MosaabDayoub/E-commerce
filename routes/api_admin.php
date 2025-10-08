@@ -1,16 +1,15 @@
 <?php
 
-use Illuminate\Http\Request\Admin\ProductRequest;
-use Illuminate\Http\Admin\CategoryRequest;
-use Illuminate\Http\Admin\UserRequest;
-use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\SizeController as AdminSizeController;
+use App\Http\Controllers\SizeController;
+use App\Http\Controllers\ِAdmin\ColorController;
 
 // user routes
 Route::get('users/search', [UserController::class, 'search']); 
@@ -40,4 +39,10 @@ Route::apiResource('orders', OrderController::class);
 
 
 // cart routes
-Route::apiResource('carts', CartController::class)->only(['index','show']);
+Route::apiResource('carts',CartController::class)->only(['index','show']);
+
+//color
+Route::apiResource('colors',AdminColorController::class)->except(['index','show']);
+
+//size
+Route::apiResource('sizes',AdminSizeController::class)->except(['index','show']);

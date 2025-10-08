@@ -38,9 +38,7 @@ class ProductController extends Controller
      * get the specified product.
      */
     public function show($productId){ 
-        $product = Product::select([
-            'id', 'name', 'price', 'description','category_id'
-        ])->with([
+        $product = Product::with([
             'sizes:id,name',
             'colors:id,name',
             'category:id,name'

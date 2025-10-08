@@ -62,13 +62,13 @@ class ProductRequest extends FormRequest
     {
         return [
             'name' => [
-                'required',
+                'sometimes',
                 'string',
                 'max:255',
-                Rule::unique('products', 'name')->ignore($productId)
+                Rule::unique('products','name')->ignore($productId)
             ],
             'description' => 'nullable|string|max:1000',
-            'price' => 'required|numeric|min:0',
+            'price' => 'sometimes|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
             'colors' => 'sometimes|array',
             'colors.*' => 'integer|exists:colors,id',

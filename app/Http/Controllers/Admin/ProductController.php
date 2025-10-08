@@ -29,7 +29,7 @@ class ProductController extends Controller
             'sizes' => $request->sizes,
         ])
         ->paginate(10);
-
+        
     return ResponseHelper::success(ProductResource::collection($products));      
     }
     
@@ -39,12 +39,20 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         $product = Product::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
             'price' => $validated['price'], 
             'category_id' => $validated['category_id'],
         ]);
 
+        // add translations to arabic
+        $product->translateOrNew('ar')->name = $request->name_ar;
+        $product->translateOrNew('ar')->description = $request->description_ar;
+        
+        // add translations to english
+        $product->translateOrNew('en')->name = $request->name_en;
+        $product->translateOrNew('en')->description = $request->description_en;
+
+        $product->save();
+        
         // add colors
         if ($request->has('colors')) {
             $product->colors()->attach($validated['colors']);
@@ -70,11 +78,19 @@ class ProductController extends Controller
         $validated = $request->validated();
 
         $product->update([
-        'name' => $validated['name'],
-        'description' => $validated['description'],
         'price' => $validated['price'], 
         'category_id' => $validated['category_id'],
         ]);
+
+        if($request->has('name_ar')) {
+            $product->translateOrNew('ar')->name = $request->name_ar;
+        }
+        
+        if($request->has('name_en')) {
+            $product->translateOrNew('en')->name = $request->name_en;
+        }
+
+        $product->save();
 
         if ($request->has('colors')) {
             $product->colors()->sync($validated['colors']);
