@@ -10,11 +10,11 @@ class ProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
+            'name' => $this->name??null,
+            'description' => $this->description??null,
             'price' => [
-                'amount' => $this->price,
-                'formatted' => number_format($this->price, 2) . ' $',
+                'amount' => $this->price??null,
+                'formatted' =>isset($this->price) ? number_format($this->price, 2) . ' $':null,
             ],
             'category' => $this->whenLoaded('category', function() {
                 return [
@@ -38,8 +38,16 @@ class ProductResource extends JsonResource
                     ];
                 });
             }),
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'main_image' => $this->getFirstMediaUrl('main')?? null,
+            
+            'gallery_images' => $this->getMedia('gallery')->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                ];
+            }),
+            'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
     }
     

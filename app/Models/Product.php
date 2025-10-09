@@ -6,11 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
 use Astrotomic\Translatable\Translatable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Product extends Model implements TranslatableContract
+
+class Product extends Model implements TranslatableContract, HasMedia
 {
     
-    use Translatable;
+    use Translatable, InteractsWithMedia;
 
     public $translatedAttributes = ['name', 'description'];
     
@@ -34,6 +37,16 @@ class Product extends Model implements TranslatableContract
 
      public function orderItems(){
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        // Main Photo
+        $this->addMediaCollection('main')
+            ->singleFile();
+
+        // gallery
+        $this->addMediaCollection('gallery');
     }
     
    

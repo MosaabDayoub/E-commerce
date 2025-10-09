@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('color_id')->constrained()->onDelete('cascade');
             $table->string('locale')->index();  // ar, en
             $table->string('name')->uniqe();
-            $table->unique(['category_id', 'locale']);
+            $table->unique(['color_id', 'locale']);
             $table->timestamps();
         });
     }

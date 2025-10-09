@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Astrotomic\Translatable\Contracts\Translatable as TranslatableContract;
 use Astrotomic\Translatable\Translatable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Category extends Model implements TranslatableContract
+
+class Category extends Model implements TranslatableContract,HasMedia
 {
-    use Translatable;
+    use Translatable, InteractsWithMedia;
     public $translatedAttributes = ['name', 'description'];
 
     public function products(){

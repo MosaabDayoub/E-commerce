@@ -9,8 +9,6 @@ class CategoryTranslation extends Model
     public $timestamps = false; 
     
     protected $fillable = [
-        'category_id',
-        'locale', 
         'name',
         'description'
     ];

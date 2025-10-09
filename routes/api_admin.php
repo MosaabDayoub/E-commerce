@@ -28,6 +28,12 @@ Route::prefix('products/{product}')->group(function () {
         Route::post('/removeColorsFromProducts', [ProductController::class, 'removeColorsFromProduct']);
     });
     
+    Route::prefix('images')->group(function () {
+        Route::delete('/main', [ProductController::class, 'deleteMainImage']);
+        Route::delete('/gallery', [ProductController::class, 'clearGallery']);
+        Route::delete('/gallery/{mediaId}', [ProductController::class, 'deleteGalleryImage']);
+    });
+    
     Route::prefix('sizes')->group(function () {
         Route::post('/addSizesToProduct', [ProductController::class, 'addSizesToProduct']);
         Route::post('/removeSizesFromProduct', [ProductController::class, 'removeSizesFromProduct']);

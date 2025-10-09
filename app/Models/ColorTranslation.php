@@ -8,9 +8,7 @@ class ColorTranslation extends Model
 {
     public $timestamps = false; 
 
-    protected $fillable = [
-        'color_id',
-        'locale', 
+    protected $fillable = [ 
         'name',
     ];
 }

@@ -16,12 +16,11 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $methodName = $this->route()->getActionMethod();
-        $productId = $this->getProductId();
 
         return match($methodName) {
             'index' => $this->getFilterRules(),
             'store' => $this->getStoreRules(),
-            'update' => $this->getUpdateRules($productId),
+            'update' => $this->getUpdateRules(),
             'addColorsToProduct', 'removeColorsFromProduct' => $this->getColorRules(),
             'addSizesToProduct', 'removeSizesFromProduct' => $this->getSizeRules(),
             'search' => $this->getSearchRules()
@@ -46,7 +45,8 @@ class ProductRequest extends FormRequest
     private function getStoreRules(): array
     {
         return [
-            'name' => 'required|unique:products,name|string|max:255',
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
@@ -54,19 +54,18 @@ class ProductRequest extends FormRequest
             'colors.*' => 'integer|exists:colors,id',
             'sizes' => 'sometimes|array',
             'sizes.*' => 'integer|exists:sizes,id',
+            'main_image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gallery_images' => 'sometimes|array',
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ];
     }
 
     // Product update rules
-    private function getUpdateRules($productId): array
+    private function getUpdateRules(): array
     {
         return [
-            'name' => [
-                'sometimes',
-                'string',
-                'max:255',
-                Rule::unique('products','name')->ignore($productId)
-            ],
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'price' => 'sometimes|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
@@ -74,6 +73,9 @@ class ProductRequest extends FormRequest
             'colors.*' => 'integer|exists:colors,id',
             'sizes' => 'sometimes|array',
             'sizes.*' => 'integer|exists:sizes,id',
+            'main_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gallery_images' => 'sometimes|array',
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ];
     }
 
@@ -113,10 +115,15 @@ class ProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // General messages
-            'name.required' => 'Product name is required',
-            'name.unique' => 'Product name already exists',
-            'name.max' => 'Product name must not exceed 255 characters',
+            // Arabic name messages
+            'name_ar.required' => 'Arabic product name is required',
+            'name_ar.string' => 'Arabic product name must be a string',
+            'name_ar.max' => 'Arabic product name must not exceed 255 characters',
+
+            // English name messages
+            'name_en.required' => 'English product name is required',
+            'name_en.string' => 'English product name must be a string',
+            'name_en.max' => 'English product name must not exceed 255 characters',
             
             'description.required' => 'Product description is required',
             'description.max' => 'Product description must not exceed 1000 characters',
@@ -154,6 +161,18 @@ class ProductRequest extends FormRequest
             'max_price.numeric' => 'Maximum price must be a number',
             'max_price.min' => 'Maximum price must be at least 0',
             'category_id.integer' => 'Category ID must be an integer',
+
+             // Main image messages
+             'main_image.required' => 'Main product image is required',
+             'main_image.image' => 'Main image must be an image file',
+             'main_image.mimes' => 'Main image must be a JPEG, PNG, JPG, or WebP file',
+             'main_image.max' => 'Main image size must not exceed 2MB',
+             
+             // gallery messages
+             'gallery_images.array' => 'Gallery images must be an array of files',
+             'gallery_images.*.image' => 'Each gallery image must be an image file',
+             'gallery_images.*.mimes' => 'Each gallery image must be a JPEG, PNG, JPG, or WebP file',
+             'gallery_images.*.max' => 'Each gallery image size must not exceed 2MB',
         ];
     }
 
