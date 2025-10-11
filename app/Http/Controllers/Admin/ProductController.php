@@ -17,9 +17,9 @@ class ProductController extends Controller
     {   
         //build the main query
         $products = Product::with([
-            'category:id,name',
-            'colors:id,name',
-            'sizes:id,name'
+            'category',
+            'colors',
+            'sizes'
         ])
         ->applyFilters([
             'category_id' => $request->category_id,

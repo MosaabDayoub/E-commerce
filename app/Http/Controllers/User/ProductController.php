@@ -18,9 +18,9 @@ class ProductController extends Controller
     {   
         //build the main query
         $products = Product::with([
-            'category:id,name',
-            'colors:id,name',
-            'sizes:id,name'
+            'category',
+            'colors',
+            'sizes'
         ])
         ->applyFilters([
             'category_id' => $request->category_id,
@@ -39,9 +39,9 @@ class ProductController extends Controller
      */
     public function show($productId){ 
         $product = Product::with([
-            'sizes:id,name',
-            'colors:id,name',
-            'category:id,name'
+            'sizes',
+            'colors',
+            'category'
         ])->findOrFail($productId);
 
         return ResponseHelper::success(new ProductResource($product));
