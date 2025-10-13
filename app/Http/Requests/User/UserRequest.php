@@ -64,7 +64,6 @@ class UserRequest extends FormRequest
                 'sometimes',
                 'required',
                 'string',
-                'confirmed',
                 Password::min(8)
                     ->letters()
                     ->mixedCase()

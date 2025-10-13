@@ -8,6 +8,11 @@ use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\SizeController as AdminSizeController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\DeleteAccountController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\ِAdmin\ColorController;
 
@@ -52,3 +57,4 @@ Route::apiResource('colors',AdminColorController::class)->except(['index','show'
 
 //size
 Route::apiResource('sizes',AdminSizeController::class)->except(['index','show']);
+

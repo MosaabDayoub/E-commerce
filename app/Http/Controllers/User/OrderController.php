@@ -16,10 +16,9 @@ class OrderController extends Controller
     // Get user's orders
     public function index(OrderRequest $request)
     {
-        $validated = $request->validated();
-
+        $user = $request->user();
         $orders = Order::with(['orderItems.product', 'orderItems.color', 'orderItems.size'])
-            ->where('user_id', $validated['user_id'])
+            ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(10); 
 
@@ -29,9 +28,9 @@ class OrderController extends Controller
     // Create new order
     public function store(OrderRequest $request)
     {
-        $validated = $request->validated();
+        $user = $request->user();
 
-        $cart = Cart::with('cartItems.product')->where('user_id', $validated['user_id'])->first();
+        $cart = Cart::with('cartItems.product')->where('user_id',$user->id)->first();
 
         if (!$cart || $cart->cartItems->isEmpty()) {
             return ResponseHelper::error('The cart is empty, cannot create order');
@@ -43,7 +42,7 @@ class OrderController extends Controller
         });
 
         $order = Order::create([
-            'user_id' => $validated['user_id'],
+            'user_id' => $user->id,
             'total' => $totalAmount,
         ]);
 

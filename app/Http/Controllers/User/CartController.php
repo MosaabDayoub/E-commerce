@@ -10,6 +10,8 @@ use App\Models\CartItem;
 
 use App\Http\Resources\CartResource;
 use App\Http\Resources\CartItemResource;
+use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Facades\Request;
 
 class CartController extends Controller
 {
@@ -17,8 +19,8 @@ class CartController extends Controller
     public function store(CartRequest $request)
     {
         $validated = $request->validated();
-        
-        $cart = Cart::firstOrCreate(['user_id' => $validated['user_id']]);
+        $user = $request->user();
+        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         $cartItem = $cart->cartItems()->create([
             'product_id' => $validated['product_id'],
@@ -33,14 +35,15 @@ class CartController extends Controller
     }
 
     // Get cart's items
-    public function show($user_id)
+    public function show(Request $request)
     {
+        $user = $request->user();
         $cart = Cart::with([
             'cartItems.product:id,name,description,price',
             'cartItems.color:id,name', 
             'cartItems.size:id,name'
         ])
-        ->where('user_id', $user_id)
+        ->where('user_id', $user->id)
         ->firstOrFail();
 
         return ResponseHelper::success(new CartResource($cart));
@@ -59,10 +62,10 @@ class CartController extends Controller
     }
   
     // Remove the entire cart
-    public function destroy(Cart $cart)
+    public function destroy(Request $request)
     {   
-        $cart->delete();
-        
+        $user = $request->user();
+        Cart::where('user_id',$user->id)->delete();
         return ResponseHelper::successMessage('Cart removed successfully');   
     }
 
@@ -79,13 +82,13 @@ class CartController extends Controller
     public function getCartCost(CartRequest $request)
     {
         $validated = $request->validated();
-        
+        $user = $request->user();
         $taxRate = 0.15;
         $discountThreshold = 100;
         $discountRate = 0.10;
 
         $cart = Cart::with('cartItems.product')
-                   ->where('user_id', $validated['user_id'])
+                   ->where('user_id', $user->id)
                    ->firstOrFail();
 
         $subtotal = $cart->cartItems->sum(function($cartItem) {
