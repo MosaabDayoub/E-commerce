@@ -57,4 +57,11 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(Order::class);
     }
 
+    public function registerMediaCollections(): void
+    {
+        // Main Photo
+        $this->addMediaCollection('main')
+            ->singleFile()->useDisk('users');
+    }
+
 }

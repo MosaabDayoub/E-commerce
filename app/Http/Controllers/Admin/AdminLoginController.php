@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -8,7 +8,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 
-class LoginController extends Controller
+class AdminLoginController extends Controller
 {
     protected $authService;
 
@@ -25,11 +25,11 @@ class LoginController extends Controller
             return ResponseHelper::error('The provided credentials are incorrect.');
         }
 
-        $token = $this->authService->createAuthToken($user);
+        $token = $this->authService->createAuthToken($user, 'admin-token', 'admin');
 
         return ResponseHelper::success([
             'user' => new UserResource($user),
             'token' => $token,
-        ], 'Login successfully');
+        ], 'Admin login successfully');
     }
 }

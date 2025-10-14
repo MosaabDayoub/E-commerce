@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 
-class LogoutController extends Controller
+class AdminLogoutController extends Controller
 {
     protected $authService;
 
@@ -19,6 +20,6 @@ class LogoutController extends Controller
     {
         $this->authService->logout($request->user());
 
-        return ResponseHelper::successMessage('Logged out successfully');
+        return ResponseHelper::successMessage('Admin logged out successfully');
     }
 }

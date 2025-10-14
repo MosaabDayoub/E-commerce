@@ -6,7 +6,6 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Controllers\User\ProductController;
 use App\Http\Controllers\User\CartController;
@@ -20,7 +19,7 @@ Route::post('categories/search', [CategoryController::class, 'search']);
 
 // product routes
 Route::get('products/search', [ProductController::class, 'search']);
-Route::resource('products',ProductController::class)->only(['index','show']); // فقط العرض
+Route::resource('products',ProductController::class)->only(['index','show']); 
 
 // register & login routes
 Route::post('/register', [RegisterController::class, '__invoke']);

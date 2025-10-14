@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\DeleteAccountController;
+use App\Http\Controllers\Admin\AdminLogoutController;
+use App\Http\Controllers\Admin\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -8,13 +11,6 @@ use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\SizeController as AdminSizeController;
-use App\Http\Controllers\Api\ProfileController;
-use App\Http\Controllers\DeleteAccountController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\LogoutController;
-use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\SizeController;
-use App\Http\Controllers\ِAdmin\ColorController;
 
 // user routes
 Route::get('users/search', [UserController::class, 'search']); 
@@ -57,4 +53,14 @@ Route::apiResource('colors',AdminColorController::class)->except(['index','show'
 
 //size
 Route::apiResource('sizes',AdminSizeController::class)->except(['index','show']);
+
+    // profile routes
+    Route::post('/logout', [AdminLogoutController::class, '__invoke']);
+    Route::delete('/account', [DeleteAccountController::class, '__invoke']);
+    Route::get('/profile', [AdminProfileController::class, 'show']);
+    Route::put('/profile', [AdminProfileController::class, 'update']);
+    Route::post('/profile/change-password', [AdminProfileController::class, 'changePassword'])->name('profile.change-password');
+    Route::delete('/profile/avatar', [AdminProfileController::class, 'deleteAvatar']);
+    Route::post('/password/reset-code', [AdminProfileController::class, 'requestResetCode'])->name('password.reset-code');
+    Route::post('/password/reset', [AdminProfileController::class, 'resetPassword'])->name('password.reset');
 

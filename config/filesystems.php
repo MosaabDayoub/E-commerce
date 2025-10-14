@@ -47,14 +47,32 @@ return [
             'report' => false,
         ],
 
-        /* 'product' => [
+         'product' => [
             'driver' => 'local',
             'root' => storage_path('app/public/products'),
             'url' => env('APP_URL').'/storage/products',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
-        ], */
+        ],
+        
+        'categories' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/categories'),
+            'url' => env('APP_URL').'/storage/categories',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'users' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/users'),
+            'url' => env('APP_URL').'/storage/users',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
 
         's3' => [
             'driver' => 's3',

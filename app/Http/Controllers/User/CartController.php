@@ -10,7 +10,6 @@ use App\Models\CartItem;
 
 use App\Http\Resources\CartResource;
 use App\Http\Resources\CartItemResource;
-use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Request;
 
 class CartController extends Controller

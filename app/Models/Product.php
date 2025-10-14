@@ -43,10 +43,10 @@ class Product extends Model implements TranslatableContract, HasMedia
     {
         // Main Photo
         $this->addMediaCollection('main')
-            ->singleFile();
+            ->singleFile()->useDisk('product');
 
         // gallery
-        $this->addMediaCollection('gallery');
+        $this->addMediaCollection('gallery')->useDisk('product');
     }
     
    

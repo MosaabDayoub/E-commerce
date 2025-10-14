@@ -6,15 +6,20 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
 use App\Http\Resources\UserResource;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Cache;
-use App\Events\PasswordResetRequested;
-use Illuminate\Support\Facades\Request;
 
 class ProfileController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     /**
      * show profile
      */
@@ -22,29 +27,22 @@ class ProfileController extends Controller
     {
         try {
             $user = $request->user();
-            
             return ResponseHelper::success(new UserResource($user), 'Profile retrieved successfully');
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return ResponseHelper::error('Failed to retrieve profile');
         }
     }
 
     /**
-     * update profile
+     * update profiles
      */
     public function update(ProfileRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             $validatedData = $request->validated();
-            
-            if (isset($validatedData['current_password'])) {
-                if (!Hash::check($validatedData['current_password'], $user->password)) {
-                    return ResponseHelper::error('Current password is incorrect');
-                }
-                
-                unset($validatedData['current_password']);
-            }
+              
+            $this->authService->updateProfile($user, $validatedData);
             
             if ($request->hasFile('avatar')) {
                 if ($user->getFirstMedia('avatar')) {
@@ -53,116 +51,103 @@ class ProfileController extends Controller
                 
                 $user->addMediaFromRequest('avatar')
                     ->toMediaCollection('avatar');
-                
-                unset($validatedData['avatar']);
             }
-            
-            $user->update($validatedData);
 
-            return ResponseHelper::success(new UserResource($user), 'Profile updated successfully');
+            return ResponseHelper::success(new UserResource($user->fresh()), 'Profile updated successfully');
 
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return ResponseHelper::error('Failed to update profile');
         }
     }
 
     /**
-     * change Password
+     * change password
      */
     public function changePassword(ProfileRequest $request): JsonResponse
     {
         try {
-
             $user = $request->user();
 
-            if (!Hash::check($request->current_password, $user->password)) {
-                return ResponseHelper::error('Current password is incorrect');
+            $result = $this->authService->changePassword(
+                $user,
+                $request->current_password,
+                $request->new_password
+            );
+
+            if (!$result['success']) {
+                return ResponseHelper::error($result['message']);
             }
 
-            if (Hash::check($request->new_password, $user->password)) {
-                return ResponseHelper::error('New password must be different from current password');
-            }
+            return ResponseHelper::successMessage($result['message']);
 
-            $user->update([
-                'password' => $request->new_password
-            ]);
-            
-            return ResponseHelper::successMessage('Password changed successfully');
-
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return ResponseHelper::error('Failed to change password');
         }
     }
 
-   /**
- * Reset password with verification code
- */
-public function resetPassword(ProfileRequest $request): JsonResponse
-{
-    try {
-        
-        $user = $request->user();
-
-        if (!$user) {
-            return ResponseHelper::error('User not found');
-        }
-
-        $cachedCode = Cache::get('password_reset_code_' . $user->id);
-
-        if (!$cachedCode || $cachedCode !== $request->code) {
-            return ResponseHelper::error('Invalid or expired verification code');
-        }
-        $user->update([
-            'password' => $request->password
-        ]);
-
-        Cache::forget('password_reset_code_' . $user->id);
-
-        return ResponseHelper::successMessage('Password reset successfully');
-
-    } catch (\Exception) {
-        return ResponseHelper::error('Failed to reset password');    
-    }
-}
     /**
-     * delete profile image
+     * request reset code
+     */
+    public function requestResetCode(Request $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->findUserByEmail($request->email);
+
+            $result = $this->authService->requestPasswordResetCode($user);
+
+            if (!$result['success']) {
+                return ResponseHelper::error($result['message']);
+            }
+
+            return ResponseHelper::successMessage($result['message']);
+
+        } catch (\Exception) {
+            return ResponseHelper::error('Failed to send verification code');    
+        }
+    }
+
+    /**
+     * reset password
+     */
+    public function resetPassword(ProfileRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->findUserByEmail($request->email);
+
+            $result = $this->authService->resetPasswordWithCode(
+                $user,
+                $request->code,
+                $request->password
+            );
+
+            if (!$result['success']) {
+                return ResponseHelper::error($result['message']);
+            }
+
+            return ResponseHelper::successMessage($result['message']);
+
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Failed to reset password');    
+        }
+    }
+
+    /**
+     * delete avatar from profile
      */
     public function deleteAvatar(ProfileRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
             
-            if ($user->getFirstMedia('avatar')) {
-                $user->getFirstMedia('avatar')->delete();
+            $deleted = $this->authService->deleteAvatar($user);
+
+            if (!$deleted) {
+                return ResponseHelper::error('No avatar found to delete');
             }
 
             return ResponseHelper::success(new UserResource($user), 'Avatar deleted successfully');     
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return ResponseHelper::error('Failed to delete avatar'); 
         }
     }
-
-    /**
- * Request password reset code
- */
-public function requestResetCode( Request $request): JsonResponse
-{
-    try {
-        
-        $user = $request->user();
-
-        if (!$user) {
-            return ResponseHelper::error('User not found');
-        }
-
-        $verificationCode = Str::random(6);
-
-        event(new PasswordResetRequested($user, $verificationCode));
-
-        return ResponseHelper::successMessage('Verification code sent to your email');
-
-    } catch (\Exception) {
-        return ResponseHelper::error('Failed to send verification code');    
-    }
-}
 }
