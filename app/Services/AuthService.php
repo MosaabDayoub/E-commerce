@@ -44,14 +44,14 @@ class AuthService
     /**
      * Register 
      */
-    public function register(array $data, string $guard = 'user'): object
+    public function register(string $name,string $email, string $password, string $guard = 'user'): object
     {
         $model = $this->getModel($guard);
         
         return $model::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
         ]);
     }
 

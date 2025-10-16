@@ -25,7 +25,7 @@ class RegisterController extends Controller
     public function __invoke(RegisterRequest $request)
     {   
 
-        $user = $this->authService->register($request->all(), 'user');
+        $user = $this->authService->register($request->name,$request->email, $request->password, 'user');
         
         $token = $this->authService->createAuthToken($user, 'user');
 
