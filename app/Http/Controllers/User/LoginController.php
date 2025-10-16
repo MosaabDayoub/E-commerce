@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\User\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 

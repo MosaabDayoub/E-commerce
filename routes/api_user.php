@@ -26,7 +26,7 @@ Route::post('/register', [RegisterController::class, '__invoke']);
 Route::post('/login', [LoginController::class, '__invoke']);
 
 // guarded routes
-Route::middleware('auth:sanctum:user_api')->group(function () {
+Route::middleware('auth:sanctum', 'auth:api_user')->group(function () {
  
     // cart routes
     Route::resource('carts',CartController::class)->only(['show','store','destroy']);

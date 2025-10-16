@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\AdminController;
 Route::post('/login', [LoginController::class, '__invoke']);
 
 //  Protected Routes
-Route::middleware(['auth:sanctum:admin_api'])->group(function () {
+Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
 
     //  Profile Management 
     Route::prefix('profile')->group(function () {

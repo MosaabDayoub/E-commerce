@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\User;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\User\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 

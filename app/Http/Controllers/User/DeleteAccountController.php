@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Helpers\ResponseHelper;
-use App\Http\Requests\DeleteAccountRequest;
+use App\Http\Requests\User\DeleteAccountRequest;
 use App\Services\AuthService;
 use App\Http\Controllers\Controller;
 

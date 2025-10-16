@@ -47,12 +47,12 @@ return [
             'hash' => false,
         ],
 
-        'user_api' => [ 
+        'api_user' => [ 
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
         
-        'admin_api' => [ 
+        'api_admin' => [ 
             'driver' => 'sanctum',
             'provider' => 'admins',
         ],
