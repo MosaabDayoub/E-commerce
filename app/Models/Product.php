@@ -49,8 +49,6 @@ class Product extends Model implements TranslatableContract, HasMedia
         $this->addMediaCollection('gallery')->useDisk('product');
     }
     
-   
-
     /**
      * Scope for filter by category
      */
@@ -103,6 +101,9 @@ class Product extends Model implements TranslatableContract, HasMedia
     public function scopeApplyFilters(Builder $query, array $filters)
     {
         return $query
+            ->when(isset($filters['search']), function($q) use ($filters) {
+                $q->where('name->' . app()->getLocale(), 'like', $filters['search'] . '%');
+            })
             ->filterByCategory($filters['category_id'] ?? null)
             ->filterByPrice($filters['min_price'] ?? null, $filters['max_price'] ?? null)
             ->filterByColors($filters['colors'] ?? null)

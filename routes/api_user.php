@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\ProfileController;
-use App\Http\Controllers\DeleteAccountController;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\LogoutController;
-use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\DeleteAccountController;
+use App\Http\Controllers\User\LoginController;
+use App\Http\Controllers\User\LogoutController;
+use App\Http\Controllers\User\RegisterController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\CategoryController;
 use App\Http\Controllers\User\ProductController;
@@ -26,7 +26,7 @@ Route::post('/register', [RegisterController::class, '__invoke']);
 Route::post('/login', [LoginController::class, '__invoke']);
 
 // guarded routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum:user_api')->group(function () {
  
     // cart routes
     Route::resource('carts',CartController::class)->only(['show','store','destroy']);

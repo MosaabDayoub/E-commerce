@@ -23,7 +23,6 @@ class ProductRequest extends FormRequest
             'update' => $this->getUpdateRules(),
             'addColorsToProduct', 'removeColorsFromProduct' => $this->getColorRules(),
             'addSizesToProduct', 'removeSizesFromProduct' => $this->getSizeRules(),
-            'search' => $this->getSearchRules()
         };
     }
 
@@ -38,6 +37,8 @@ class ProductRequest extends FormRequest
             'min_price' => 'sometimes|numeric|min:0',
             'max_price' => 'sometimes|numeric|min:0',
             'category_id' => 'sometimes|integer|exists:categories,id',
+            'search' => 'required|string|min:1|max:255'
+            
         ];
     }
 
@@ -101,7 +102,7 @@ class ProductRequest extends FormRequest
     private function getSearchRules(): array
     {
         return [
-            'search' => 'required|string|min:1|max:255'
+            
         ];
     }
 

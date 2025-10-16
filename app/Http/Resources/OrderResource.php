@@ -1,5 +1,4 @@
 <?php
-// app/Http/Resources/OrderResource.php
 
 namespace App\Http\Resources;
 
@@ -18,8 +17,8 @@ class OrderResource extends JsonResource
             ],
             'status' => $this->status,
             'order_items' => OrderItemResource::collection($this->whenLoaded('orderItems')),
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'created_at' => $this->created_at?->toDateTimeString(), 
+            'updated_at' => $this->updated_at?->toDateTimeString(), 
         ];
     }
 }

@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
 use App\Http\Requests\Admin\UserRequest;
-use Illuminate\Support\Facades\Hash;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
+
 
 class UserController extends Controller
 {
@@ -76,5 +77,5 @@ class UserController extends Controller
         ->limit(50)
         ->paginate(10);
         return ResponseHelper::success(UserResource::collection($users)); 
-}
+    }
 }

@@ -27,6 +27,7 @@ class ProductController extends Controller
             'max_price' => $request->max_price,
             'colors' => $request->colors,
             'sizes' => $request->sizes,
+            'search' => $request->search ?? null,
         ])
         ->paginate(10);
         

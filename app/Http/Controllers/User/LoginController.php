@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -19,13 +19,13 @@ class LoginController extends Controller
 
     public function __invoke(LoginRequest $request)
     {
-        $user = $this->authService->login($request->email, $request->password);
+        $user = $this->authService->login($request->email, $request->password,'user');
 
         if (!$user) {
             return ResponseHelper::error('The provided credentials are incorrect.');
         }
 
-        $token = $this->authService->createAuthToken($user);
+        $token = $this->authService->createAuthToken($user,'user');
 
         return ResponseHelper::success([
             'user' => new UserResource($user),

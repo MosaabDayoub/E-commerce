@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\admin;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\adminResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,8 +26,8 @@ class ProfileController extends Controller
     public function show(ProfileRequest $request): JsonResponse
     {
         try {
-            $user = $request->user('api_user');
-            return ResponseHelper::success(new UserResource($user), 'Profile retrieved successfully');
+            $admin = $request->user('api_admin');
+            return ResponseHelper::success(new adminResource($admin), 'Profile retrieved successfully');
         } catch (\Exception $e) {
             return ResponseHelper::error('Failed to retrieve profile');
         }
@@ -39,21 +39,21 @@ class ProfileController extends Controller
     public function update(ProfileRequest $request): JsonResponse
     {
         try {
-            $user = $request->user('api_user');
+            $admin = $request->user('api_admin');
             $validatedData = $request->validated();
               
-            $this->authService->updateProfile($user, $validatedData);
+            $this->authService->updateProfile($admin, $validatedData);
             
             if ($request->hasFile('avatar')) {
-                if ($user->getFirstMedia('avatar')) {
-                    $user->getFirstMedia('avatar')->delete();
+                if ($admin->getFirstMedia('avatar')) {
+                    $admin->getFirstMedia('avatar')->delete();
                 }
                 
-                $user->addMediaFromRequest('avatar')
+                $admin->addMediaFromRequest('avatar')
                     ->toMediaCollection('avatar');
             }
 
-            return ResponseHelper::success(new UserResource($user->fresh()), 'Profile updated successfully');
+            return ResponseHelper::success(new adminResource($admin->fresh()), 'Profile updated successfully');
 
         } catch (\Exception $e) {
             return ResponseHelper::error('Failed to update profile');
@@ -66,10 +66,10 @@ class ProfileController extends Controller
     public function changePassword(ProfileRequest $request): JsonResponse
     {
         try {
-            $user = $request->user('api_user');
+            $admin = $request->user('api_admin');
 
             $result = $this->authService->changePassword(
-                $user,
+                $admin,
                 $request->current_password,
                 $request->new_password
             );
@@ -91,9 +91,9 @@ class ProfileController extends Controller
     public function requestResetCode(Request $request): JsonResponse
     {
         try {
-            $user = $this->authService->findUserByEmail($request->email,'user');
+            $admin = $this->authService->finduserByEmail($request->email,'admin');
 
-            $result = $this->authService->requestPasswordResetCode($user,'user');
+            $result = $this->authService->requestPasswordResetCode($admin,'admin');
 
             if (!$result['success']) {
                 return ResponseHelper::error($result['message']);
@@ -112,13 +112,13 @@ class ProfileController extends Controller
     public function resetPassword(ProfileRequest $request): JsonResponse
     {
         try {
-            $user = $this->authService->findUserByEmail($request->email,'user');
+            $admin = $this->authService->finduserByEmail($request->email,'admin');
 
             $result = $this->authService->resetPasswordWithCode(
-                $user,
+                $admin,
                 $request->code,
                 $request->password,
-                'user'
+                'admin'
             );
 
             if (!$result['success']) {
@@ -138,15 +138,15 @@ class ProfileController extends Controller
     public function deleteAvatar(ProfileRequest $request): JsonResponse
     {
         try {
-            $user = $request->user('api_user');
+            $admin = $request->user('api_admin');
             
-            $deleted = $this->authService->deleteAvatar($user);
+            $deleted = $this->authService->deleteAvatar($admin);
 
             if (!$deleted) {
                 return ResponseHelper::error('No avatar found to delete');
             }
 
-            return ResponseHelper::success(new UserResource($user), 'Avatar deleted successfully');     
+            return ResponseHelper::success(new adminResource($admin), 'Avatar deleted successfully');     
         } catch (\Exception $e) {
             return ResponseHelper::error('Failed to delete avatar'); 
         }

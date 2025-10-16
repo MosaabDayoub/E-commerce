@@ -15,8 +15,8 @@ class ColorResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id ?? null,
-            'name' => $this->name?? null,
+            'id' => $this->id,
+            'name' => $this->name,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
         ];

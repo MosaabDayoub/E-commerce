@@ -18,7 +18,7 @@ class CartController extends Controller
     public function store(CartRequest $request)
     {
         $validated = $request->validated();
-        $user = $request->user();
+        $user = $request->user('api_user');
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
         $cartItem = $cart->cartItems()->create([
@@ -36,7 +36,7 @@ class CartController extends Controller
     // Get cart's items
     public function show(Request $request)
     {
-        $user = $request->user();
+        $user = $request->user('api_user');
         $cart = Cart::with([
             'cartItems.product:id,name,description,price',
             'cartItems.color:id,name', 
@@ -63,7 +63,7 @@ class CartController extends Controller
     // Remove the entire cart
     public function destroy(Request $request)
     {   
-        $user = $request->user();
+        $user = $request->user('api_user');
         Cart::where('user_id',$user->id)->delete();
         return ResponseHelper::successMessage('Cart removed successfully');   
     }
@@ -80,8 +80,7 @@ class CartController extends Controller
     // Get cart cost summary
     public function getCartCost(CartRequest $request)
     {
-        $validated = $request->validated();
-        $user = $request->user();
+        $user = $request->user('api_user');
         $taxRate = 0.15;
         $discountThreshold = 100;
         $discountRate = 0.10;

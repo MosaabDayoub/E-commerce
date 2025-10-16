@@ -10,7 +10,7 @@ class CartItemResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'quantity' => $this->quantity,
+            'quantity' => $this->quantity, 
             'product' => $this->whenLoaded('product', [
                 'id' => $this->product->id,
                 'name' => $this->product->name,
@@ -25,12 +25,14 @@ class CartItemResource extends JsonResource
                 'id' => $this->size->id,
                 'name' => $this->size->name,
             ]),
-            'item_total' => [
-                'amount' => $this->quantity * $this->product->price,
-                'formatted' => number_format($this->quantity * $this->product->price, 2) . ' $',
-            ],
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'item_total' => $this->when($this->relationLoaded('product'), function() {
+                return [
+                    'amount' => $this->quantity * $this->product->price,
+                    'formatted' => number_format($this->quantity * $this->product->price, 2) . ' $',
+                ];
+            }),
+            'created_at' => $this->created_at?->toDateTimeString(), 
+            'updated_at' => $this->updated_at?->toDateTimeString(), 
         ];
     }
 }

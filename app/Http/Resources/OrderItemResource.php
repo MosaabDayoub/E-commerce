@@ -28,8 +28,8 @@ class OrderItemResource extends JsonResource
                 'id' => $this->size->id,
                 'name' => $this->size->name,
             ]),
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'created_at' => $this->created_at?->toDateTimeString(), 
+            'updated_at' => $this->updated_at?->toDateTimeString(), 
         ];
     }
 }

@@ -18,7 +18,7 @@ class DeleteAccountController extends Controller
 
     public function __invoke(DeleteAccountRequest $request)
     {
-        $user = $request->user();
+        $user = $request->user('api_admin');
 
         $deleted = $this->authService->deleteAccount($user);
 

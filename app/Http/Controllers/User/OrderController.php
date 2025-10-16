@@ -16,7 +16,7 @@ class OrderController extends Controller
     // Get user's orders
     public function index(OrderRequest $request)
     {
-        $user = $request->user();
+        $user = $request->user('api_user');
         $orders = Order::with(['orderItems.product', 'orderItems.color', 'orderItems.size'])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
@@ -28,7 +28,7 @@ class OrderController extends Controller
     // Create new order
     public function store(OrderRequest $request)
     {
-        $user = $request->user();
+        $user = $request->user('api_user');
 
         $cart = Cart::with('cartItems.product')->where('user_id',$user->id)->first();
 

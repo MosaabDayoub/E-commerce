@@ -125,8 +125,8 @@ class CategoryController extends Controller
         try {
             $validated = $request->validated();
 
-            $categories = Category::whereHas('translations', function($query) use ($validated) {
-                $query->where('name', 'like', $validated['search'] . '%');
+            $categories = Category::whereHas('translations', function($q) use ($validated) {
+                $q->where('name->' . app()->getLocale(), 'like', $validated['search'] . '%');
             })->get();
 
             return ResponseHelper::success(CategoryResource::collection($categories));

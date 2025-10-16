@@ -3,20 +3,27 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Admin;
 use App\Events\PasswordResetRequested;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AuthService
 {
+    const PASSWORD_RESET_KEY = 'password_reset_code_';
+    const TOKEN_NAME = 'auth-token';
+
+    public function __construct() {}
+
     /**
-     * /Login
+     * Login - 
      */
-    public function login(string $email, string $password): ?User
+    public function login(string $email, string $password, string $guard = 'user'): ?object
     {
-        $user = $this->findUserByEmail($email);
+        $user = $this->findUserByEmail($email, $guard);
 
         if (!$user || !Hash::check($password, $user->password)) {
             return null;
@@ -26,46 +33,48 @@ class AuthService
     }
 
     /**
-     * create token for user 
+     * Create authentication token 
      */
-    public function createAuthToken(User $user, string $tokenName = 'auth-token'): string
+    public function createAuthToken(object $user, string $guard = 'user'): string
     {
+        $tokenName = $guard . '-' . self::TOKEN_NAME;
         return $user->createToken($tokenName)->plainTextToken;
     }
 
     /**
-     * Register
+     * Register 
      */
-    public function register(array $data): User
+    public function register(array $data, string $guard = 'user'): object
     {
-        return User::create([
+        $model = $this->getModel($guard);
+        
+        return $model::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => $data['password'], 
+            'password' => $data['password'],
         ]);
     }
 
     /**
-     * Logout
+     * Logout 
      */
-    public function logout(User $user): void
+    public function logout(object $user): void
     {
         $user->tokens()->delete();
     }
 
     /**
-     * update profile
+     * Update profile
      */
-    public function updateProfile(User $user, array $data): bool
+    public function updateProfile(object $user, array $data): bool
     {
-        
         return $user->update($data);
     }
 
     /**
-     * change password
+     * Change password
      */
-    public function changePassword(User $user, string $currentPassword, string $newPassword): array
+    public function changePassword(object $user, string $currentPassword, string $newPassword): array
     {
         if (!Hash::check($currentPassword, $user->password)) {
             return ['success' => false, 'message' => 'Current password is incorrect'];
@@ -81,11 +90,13 @@ class AuthService
     }
 
     /**
-     * request reset password code
+     * Request password reset code 
      */
-    public function requestPasswordResetCode(User $user): array
+    public function requestPasswordResetCode(object $user, string $guard = 'user'): array
     {
         $verificationCode = Str::random(6);
+        
+        Cache::put(self::PASSWORD_RESET_KEY . $guard . '_' . $user->id, $verificationCode, now()->addMinutes(10));
 
         event(new PasswordResetRequested($user, $verificationCode));
 
@@ -93,27 +104,26 @@ class AuthService
     }
 
     /**
-     * reset passowrd with code 
+     * Reset password with code 
      */
-    public function resetPasswordWithCode(User $user, string $code, string $newPassword): array
+    public function resetPasswordWithCode(object $user, string $code, string $newPassword, string $guard = 'user'): array
     {
-        $cachedCode = Cache::get('password_reset_code_' . $user->id);
+        $cachedCode = Cache::get(self::PASSWORD_RESET_KEY . $guard . '_' . $user->id);
 
         if (!$cachedCode || $cachedCode !== $code) {
             return ['success' => false, 'message' => 'Invalid or expired verification code'];
         }
 
         $user->update(['password' => $newPassword]);
-
-        Cache::forget('password_reset_code_' . $user->id);
+        Cache::forget(self::PASSWORD_RESET_KEY . $guard . '_' . $user->id);
 
         return ['success' => true, 'message' => 'Password reset successfully'];
     }
 
     /**
-     * delete avatar
+     * Delete avatar
      */
-    public function deleteAvatar(User $user): bool
+    public function deleteAvatar(object $user): bool
     {
         if ($user->getFirstMedia('avatar')) {
             $user->clearMediaCollection('avatar');
@@ -123,34 +133,48 @@ class AuthService
         return false;
     }
 
-     /**
-     * Delete account
+    /**
+     * Delete account 
      */
-    public function deleteAccount(User $user): bool
+    public function deleteAccount(object $user): bool
     {
         DB::beginTransaction();
 
         try {
             $user->tokens()->delete();
-            
             $user->delete();
-
+            
             DB::commit();
-
             return true;
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Failed to delete account: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
             return false;
         }
     }
 
+    /**
+     * Find user by email 
+     */
+    public function findUserByEmail(string $email, string $guard = 'user'): ?object
+    {
+        $model = $this->getModel($guard);
+        return $model::where('email', $email)->first();
+    }
 
     /**
-     * find user by email 
+     * Get model based on guard
      */
-    public function findUserByEmail(string $email): ?User
+    private function getModel(string $guard): string
     {
-        return User::where('email', $email)->first();
+        return match($guard) {
+            'admin' => Admin::class,
+            'user' => User::class,
+            default => User::class
+        };
     }
 }

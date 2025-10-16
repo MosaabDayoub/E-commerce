@@ -14,8 +14,9 @@ class CartResource extends JsonResource
             'cart_items' => CartItemResource::collection($this->whenLoaded('cartItems')),
             'summary' => $this->whenLoaded('cartItems', function() {
                 $subtotal = $this->cartItems->sum(function($item) {
-                    return $item->quantity * $item->product->price;
-                });    
+                    return $item->product ? $item->quantity * $item->product->price : 0;
+                });
+                
                 return [
                     'items_count' => $this->cartItems->count(),
                     'total_quantity' => $this->cartItems->sum('quantity'),
@@ -25,8 +26,8 @@ class CartResource extends JsonResource
                     ],
                 ];
             }),
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'created_at' => $this->created_at?->toDateTimeString(), 
+            'updated_at' => $this->updated_at?->toDateTimeString(), 
         ];
     }
 }

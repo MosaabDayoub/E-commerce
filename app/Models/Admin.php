@@ -11,7 +11,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;   
 
-class User extends Authenticatable implements HasMedia
+class Admin extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable,HasApiTokens,InteractsWithMedia,HasRoles;
@@ -50,19 +50,13 @@ class User extends Authenticatable implements HasMedia
         ];
     }
 
-    public function carts(){
-        return $this->hasMany(Cart::class);
-    }
 
-    public function orders(){
-        return $this->hasMany(Order::class);
-    }
 
     public function registerMediaCollections(): void
     {
         // Main Photo
         $this->addMediaCollection('main')
-            ->singleFile()->useDisk('users');
+            ->singleFile()->useDisk('admins');
     }
 
 }

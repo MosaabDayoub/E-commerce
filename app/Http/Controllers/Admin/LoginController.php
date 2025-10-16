@@ -8,7 +8,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 
-class AdminLoginController extends Controller
+class LoginController extends Controller
 {
     protected $authService;
 

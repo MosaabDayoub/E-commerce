@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 
-class AdminLogoutController extends Controller
+class LogoutController extends Controller
 {
     protected $authService;
 
@@ -18,7 +18,7 @@ class AdminLogoutController extends Controller
 
     public function __invoke(Request $request)
     {
-        $this->authService->logout($request->user());
+        $this->authService->logout($request->user('api_admin'));
 
         return ResponseHelper::successMessage('Admin logged out successfully');
     }

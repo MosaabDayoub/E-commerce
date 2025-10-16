@@ -1,38 +1,31 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\DeleteAccountRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Services\AuthService;
+use App\Http\Controllers\Controller;
 
 class DeleteAccountController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function __invoke(DeleteAccountRequest $request)
     {
-        DB::beginTransaction();
+        $user = $request->user('api_user');
 
-        try {
-            $user = $request->user();
-            
-            $user->tokens()->delete();
-            
-            $user->delete();
+        $deleted = $this->authService->deleteAccount($user);
 
-            DB::commit();
-
-            return ResponseHelper::successMessage(
-                'Account deleted successfully'
-            );
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
+        if (!$deleted) {
             return ResponseHelper::error('Account deletion failed');
         }
+
+        return ResponseHelper::successMessage('Account deleted successfully');
     }
 }

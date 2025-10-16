@@ -28,6 +28,7 @@ class ProductController extends Controller
             'max_price' => $request->max_price,
             'colors' => $request->colors,
             'sizes' => $request->sizes,
+            'search' => $request->search ?? null,
         ])
         ->paginate(10);
 
@@ -46,14 +47,4 @@ class ProductController extends Controller
 
         return ResponseHelper::success(new ProductResource($product));
     }
-
-    // search about specified resource
-    public function search(ProductRequest $request){
-            
-            $products = Product::where('name','like',$request->search . '%')
-            ->limit(50)
-            ->paginate(10);
-            return ResponseHelper::success(ProductResource::collection($products)); 
-}
-
 }
