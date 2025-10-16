@@ -4,7 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProfileRequest;
+use App\Http\Requests\Admin\ProfileRequest;
 use App\Http\Resources\adminResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
