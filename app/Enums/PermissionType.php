@@ -4,6 +4,11 @@ namespace App\Enums;
 
 enum PermissionType: string
 {
+    case VIEW_ADMINS = 'view-admins';
+    case CREATE_ADMINS = 'create-admins';
+    case EDIT_ADMINS = 'edit-admins';
+    case DELETE_ADMINS = 'delete-admins';
+
     case VIEW_USERS = 'view-users';
     case CREATE_USERS = 'create-users';
     case EDIT_USERS = 'edit-users';
@@ -30,11 +35,13 @@ enum PermissionType: string
     case DELETE_SIZES = 'delete-sizes';
 
     case VIEW_CARTS = 'view-carts';
+    case VIEW_CART = 'view-cart';
     case CREATE_CARTS = 'create-carts';
     case EDIT_CARTS = 'edit-carts';
     case DELETE_CARTS = 'delete-carts';
 
     case VIEW_ORDERS = 'view-orders';
+    case VIEW_ORDER = 'view-order';
     case CREATE_ORDERS = 'create-orders';
     case EDIT_ORDERS = 'edit-orders';
     case DELETE_ORDERS = 'delete-orders';

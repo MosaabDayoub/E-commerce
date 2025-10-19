@@ -37,26 +37,4 @@ class OrderController extends Controller
         ->paginate(10);
         return ResponseHelper::success(OrderResource::collection($orders));
     }
-
-    // update order status.
-    public function update(OrderRequest $request, $order_id)
-    {
-        $validated = $request->validated();
-
-        $order = Order::findOrFail($order_id);
-        
-        $order->update([
-        'status' => $validated['status']
-        ]);
-
-        return ResponseHelper::successMessage('order updated successfully'); 
-    }
-
-    // Remove order.
-    public function destroy(Order $order)
-    {
-        $order ->delete();
-
-        return ResponseHelper::successMessage('order deleted successfully');
-    }
 }

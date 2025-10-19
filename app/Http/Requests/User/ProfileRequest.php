@@ -19,13 +19,24 @@ class ProfileRequest extends FormRequest
         $routeName = $this->route()->getName();
 
         $rules = [
+            'name' => 'sometimes|required|string|max:255',
             'email' => [
                 'sometimes',
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($userId)
             ],
+            'password' => [
+                'sometimes',
+                'required',
+                'string',
+                Password::min(8)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+            ],
+            'password_confirmation' => 'required_with:password|string|same:password',
             'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ];
 

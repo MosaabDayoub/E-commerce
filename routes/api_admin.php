@@ -17,6 +17,12 @@ use App\Http\Controllers\Admin\AdminController;
 //  Authentication Routes (Public)
 Route::post('/login', [LoginController::class, '__invoke']);
 
+//  Password Reset (Public)
+Route::prefix('password')->group(function () {
+    Route::post('/reset-code', [ProfileController::class, 'requestResetCode']);
+    Route::post('/reset', [ProfileController::class, 'resetPassword']);
+});
+
 //  Protected Routes
 Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
 
@@ -28,16 +34,25 @@ Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
         Route::delete('/avatar', [ProfileController::class, 'deleteAvatar']);
     });
 
-    //  Password Reset 
-    Route::prefix('password')->group(function () {
-        Route::post('/reset-code', [ProfileController::class, 'requestResetCode']);
-        Route::post('/reset', [ProfileController::class, 'resetPassword']);
-    });
-
     //  Session Management 
     Route::post('/logout', [LogoutController::class, '__invoke']);
     Route::delete('/account', [DeleteAccountController::class, '__invoke']);
 
+     //  Users Management
+     Route::middleware(['permission:view-users'])->prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{user}', [UserController::class, 'show']);
+        Route::get('/search', [UserController::class, 'search']);
+
+        Route::middleware(['permission:create-users'])->group(function () {
+            Route::post('/', [UserController::class, 'store']);
+        });
+
+        Route::middleware(['permission:edit-users'])->group(function () {
+            Route::put('/{user}', [UserController::class, 'update']);
+        });
+    });
+    
     // ============ ADMINS MANAGEMENT ============
     Route::middleware(['permission:view-admins'])->prefix('admins')->group(function () {
         Route::get('/', [AdminController::class, 'index']);
@@ -84,12 +99,12 @@ Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
 
     //  Products Management
     Route::middleware(['permission:view-products'])->prefix('products')->group(function () {
-        // 👁️ View Permissions
+        // View product
         Route::get('/', [ProductController::class, 'index']);
         Route::get('/{product}', [ProductController::class, 'show']);
         Route::post('/search', [ProductController::class, 'search']);
 
-        //  Edit Permissions
+        //  Edit product
         Route::middleware(['permission:edit-products'])->group(function () {
             Route::put('/{product}', [ProductController::class, 'update']);
             
@@ -115,12 +130,12 @@ Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
             });
         });
 
-        //  Delete Permissions
+        //  Delete product
         Route::middleware(['permission:delete-products'])->group(function () {
             Route::delete('/{product}', [ProductController::class, 'destroy']);
         });
 
-        //  Create Permissions
+        //  Create product
         Route::middleware(['permission:create-products'])->group(function () {
             Route::post('/', [ProductController::class, 'store']);
         });
@@ -193,20 +208,7 @@ Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
         });
 
         Route::middleware(['permission:edit-users'])->group(function () {
-            Route::put('/{user}', [UserController::class, 'update']);
-            
-            // Role Management
-            Route::prefix('/{user}')->group(function () {
-                Route::post('/assign-role', [UserController::class, 'assignRole']);
-                Route::post('/remove-role', [UserController::class, 'removeRole']);
-                Route::post('/sync-roles', [UserController::class, 'syncRoles']);
-                
-                // User Permissions Management
-                Route::post('/give-permission', [UserController::class, 'givePermissionTo']);
-                Route::post('/revoke-permission', [UserController::class, 'revokePermissionFrom']);
-                Route::post('/sync-permissions', [UserController::class, 'syncPermissions']);
-                Route::get('/direct-permissions', [UserController::class, 'getDirectPermissions']);
-            });
+            Route::put('/{user}', [UserController::class, 'update']);    
         });
 
         Route::middleware(['permission:delete-users'])->group(function () {
@@ -217,16 +219,12 @@ Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
     //  Cart Management 
     Route::middleware(['permission:view-carts'])->prefix('carts')->group(function () {
         Route::get('/', [CartController::class, 'index']);
-        Route::get('/{cart}', [CartController::class, 'show']);
+        Route::get('/{cart}', [CartController::class, 'show']); 
     });
 
     //  Order Management 
     Route::middleware(['permission:view-orders'])->prefix('orders')->group(function () {
         Route::get('/', [OrderController::class, 'index']);
         Route::get('/{order}', [OrderController::class, 'show']);
-        Route::post('/', [OrderController::class, 'store']);
-        Route::put('/{order}', [OrderController::class, 'update']);
-        Route::delete('/{order}', [OrderController::class, 'destroy']);
     });
-
 });

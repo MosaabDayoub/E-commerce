@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\ProfileRequest;
+use App\Http\Requests\User\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
@@ -41,7 +42,6 @@ class ProfileController extends Controller
         try {
             $user = $request->user('api_user');
             $validatedData = $request->validated();
-              
             $this->authService->updateProfile($user, $validatedData);
             
             if ($request->hasFile('avatar')) {

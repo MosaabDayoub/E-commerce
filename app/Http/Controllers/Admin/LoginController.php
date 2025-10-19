@@ -19,7 +19,7 @@ class LoginController extends Controller
 
     public function __invoke(LoginRequest $request)
     {
-        $user = $this->authService->login($request->email, $request->password);
+        $user = $this->authService->login($request->email, $request->password,'admin');
 
         if (!$user) {
             return ResponseHelper::error('The provided credentials are incorrect.');
