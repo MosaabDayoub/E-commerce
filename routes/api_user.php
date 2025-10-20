@@ -19,7 +19,7 @@ Route::post('/password/requestResetCode', [ProfileController::class, 'requestRes
 Route::post('/password/resetPassword', [ProfileController::class, 'resetPassword'])->name('password.reset');
 
 // ==================== PROTECTED ROUTES ====================
-Route::middleware(['auth:sanctum', 'auth:api'])->group(function () {
+Route::middleware(['auth:api_user'])->group(function () {
 
     // ==================== PROFILE MANAGEMENT ====================
     Route::prefix('profile')->group(function () {
@@ -53,8 +53,11 @@ Route::middleware(['auth:sanctum', 'auth:api'])->group(function () {
         Route::get('/cost', [CartController::class, 'getCartCost']);
 
         Route::middleware(['permission:edit-carts'])->group(function () {
-            Route::post('/', [CartController::class, 'store']);
             Route::put('/cartItems/{cartItem}', [CartController::class, 'updateItem']);
+        });
+
+        Route::middleware(['permission:create-carts'])->group(function () {
+            Route::post('/', [CartController::class, 'store']);
         });
 
         Route::middleware(['permission:delete-carts'])->group(function () {

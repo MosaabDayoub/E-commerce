@@ -24,7 +24,7 @@ Route::prefix('password')->group(function () {
 });
 
 //  Protected Routes
-Route::middleware(['auth:sanctum', 'auth:api_admin'])->group(function () {
+Route::middleware(['auth:api_admin'])->group(function () {
 
     //  Profile Management 
     Route::prefix('profile')->group(function () {

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\Admin;
 use App\Events\PasswordResetRequested;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AuthService
 {
@@ -47,7 +50,9 @@ class AuthService
     public function register(string $name,string $email, string $password, string $guard = 'user'): object
     {
         $model = $this->getModel($guard);
-        
+        if($guard == 'user'){
+            
+        }
         return $model::create([
             'name' => $name,
             'email' => $email,

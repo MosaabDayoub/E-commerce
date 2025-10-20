@@ -56,7 +56,7 @@ return [
             'report' => false,
         ],
         
-        'categories' => [
+        'category' => [
             'driver' => 'local',
             'root' => storage_path('app/public/categories'),
             'url' => env('APP_URL').'/storage/categories',

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductRequest;
 use App\Helpers\ResponseHelper;
 use App\Http\Resources\ProductResource;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -35,121 +36,71 @@ class ProductController extends Controller
     }
     
     // Store a newly product.
-    public function store(ProductRequest $request)
-    {
-        try {
-            $validated = $request->validated();
+public function store(ProductRequest $request)
+{
+    DB::beginTransaction();
+    
+    try {
+        $validated = $request->validated();
 
-            $product = Product::create([
-                'price' => $validated['price'], 
-                'category_id' => $validated['category_id'],
-            ]);
+        $product = Product::create([
+            'price' => $validated['price'], 
+            'category_id' => $validated['category_id'],
+        ]);
 
-            // add translations to arabic
-            $product->translateOrNew('ar')->name = $request->name_ar;
-            $product->translateOrNew('ar')->description = $request->description_ar;
-            
-            // add translations to english
-            $product->translateOrNew('en')->name = $request->name_en;
-            $product->translateOrNew('en')->description = $request->description_en;
+        $translations = [
+            'ar' => [
+                'name' => $request->name_ar,
+                'description' => $request->description_ar
+            ],
+            'en' => [
+                'name' => $request->name_en,
+                'description' => $request->description_en
+            ]
+        ];
 
-            $product->save();
-            
-            // add main image
-            if ($request->hasFile('main_image')) {
-                $product->addMedia($request->file('main_image'))
-                    ->toMediaCollection('main');
-            }
-
-            // add images to gallery
-            if ($request->hasFile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $image) {
-                    $product->addMedia($image)
-                        ->toMediaCollection('gallery');
-                }
-            }
-            
-            // add colors
-            if ($request->has('colors')) {
-                $product->colors()->attach($validated['colors']);
-            }
-
-            // add sizes
-            if ($request->has('sizes')) {
-                $product->sizes()->attach($validated['sizes']);
-            }
-
-            return ResponseHelper::success(new ProductResource($product),'Product created successfully');
-
-        } catch (\Exception $e) {
-            return ResponseHelper::error('Failed to create product: ' . $e->getMessage());
+        foreach ($translations as $locale => $translation) {
+            $product->translateOrNew($locale)->fill($translation);
         }
-    }
+        
+        $product->save();
 
-    // get specified product.
-    public function show(Product $product)
-    {       
-        return ResponseHelper::success(new ProductResource($product));
-    }
-
-    // Update product.
-    public function update(ProductRequest $request, Product $product)
-    {
-        try {
-            $validated = $request->validated();
-
-            $product->update([
-                'price' => $validated['price'], 
-                'category_id' => $validated['category_id'],
-            ]);
-
-            if($request->has('name_ar')) {
-                $product->translateOrNew('ar')->name = $request->name_ar;
-            }
-            
-            if($request->has('name_en')) {
-                $product->translateOrNew('en')->name = $request->name_en;
-            }
-
-            if($request->has('description_ar')) {
-                $product->translateOrNew('ar')->description = $request->description_ar;
-            }
-            
-            if($request->has('description_en')) {
-                $product->translateOrNew('en')->description = $request->description_en;
-            }
-
-            $product->save();
-
-            // update main image
-            if ($request->hasFile('main_image')) {
-                $product->clearMediaCollection('main');
-                $product->addMedia($request->file('main_image'))
-                    ->toMediaCollection('main');
-            }
-
-            // add images to gallery
-            if ($request->hasFile('gallery_images')) {
-                foreach ($request->file('gallery_images') as $image) {
-                    $product->addMedia($image)
-                        ->toMediaCollection('gallery');
-                }
-            }
-
-            if ($request->has('colors')) {
-                $product->colors()->sync($validated['colors']);
-            }
-
-            if ($request->has('sizes')) {
-                $product->sizes()->sync($validated['sizes']);
-            }
-            
-            return ResponseHelper::success(new ProductResource($product),'Product updated successfully');
-
-        } catch (\Exception $e) {
-            return ResponseHelper::error('Failed to update product: ' . $e->getMessage());
+        if ($request->has('colors')) {
+            $product->colors()->attach($validated['colors']);
         }
+
+        if ($request->has('sizes')) {
+            $product->sizes()->attach($validated['sizes']);
+        }
+
+        if ($request->hasFile('main_image')) {
+            $product->addMedia($request->file('main_image'))
+                ->toMediaCollection('main');
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $image) {
+                $product->addMedia($image)
+                    ->toMediaCollection('gallery');
+            }
+        }
+
+        DB::commit();
+        
+        $product->load([
+            'category', 
+            'colors', 
+            'sizes', 
+            'media', 
+            'translations'
+        ]);
+        return ResponseHelper::success(new ProductResource($product), 'Product created successfully');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return ResponseHelper::error('Failed to create product: ' . $e->getMessage());
     }
+}
 
     // Remove product.
     public function destroy(Product $product)
