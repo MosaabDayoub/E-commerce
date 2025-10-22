@@ -59,4 +59,14 @@ class Admin extends Authenticatable implements HasMedia
             ->singleFile()->useDisk('admins');
     }
 
+    public static function getSuperAdmin()
+    {
+        return static::role('super-admin')->first();
+    }
+
+    public function isSuperAdmin()
+    {
+        return $this->hasRole('super-admin');
+    }
+
 }

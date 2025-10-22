@@ -10,13 +10,18 @@ use App\Models\OrderItem;
 use App\Models\Cart;
 use App\Helpers\ResponseHelper;
 use App\Http\Resources\OrderResource;
+use App\Exceptions\EmptyCartException;
+use App\Exceptions\OrderStatusException;
 
 class OrderController extends Controller
 {
-    // Get user's orders
+    /**
+     * Get user's orders
+     */
     public function index(OrderRequest $request)
     {
         $user = $request->user('api_user');
+
         $orders = Order::with(['orderItems.product', 'orderItems.color', 'orderItems.size'])
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
@@ -25,15 +30,16 @@ class OrderController extends Controller
         return ResponseHelper::success(OrderResource::collection($orders));
     }
 
-    // Create new order
+    /**
+     * Create new order
+     */
     public function store(OrderRequest $request)
     {
         $user = $request->user('api_user');
-
-        $cart = Cart::with('cartItems.product')->where('user_id',$user->id)->first();
+        $cart = Cart::with('cartItems.product')->where('user_id', $user->id)->first();
 
         if (!$cart || $cart->cartItems->isEmpty()) {
-            return ResponseHelper::error('The cart is empty, cannot create order');
+            throw new EmptyCartException($user->id);
         }
 
         // Calculate the total amount
@@ -43,7 +49,7 @@ class OrderController extends Controller
 
         $order = Order::create([
             'user_id' => $user->id,
-            'total' => $totalAmount,
+            'total' => $totalAmount,    
         ]);
 
         // Copy cart items to the order
@@ -60,11 +66,15 @@ class OrderController extends Controller
 
         $order->load(['orderItems.product', 'orderItems.color', 'orderItems.size']);
         $cart->delete();
+        
         event(new OrderCreated($order));
-        return ResponseHelper::success(new OrderResource($order),'Order Created successfully');
+
+        return ResponseHelper::success(new OrderResource($order), 'Order Created successfully');
     }
 
-    // Get order's items
+    /**
+     * Get order's items
+     */
     public function show($order_id)
     {
         $order = Order::with([
@@ -87,21 +97,19 @@ class OrderController extends Controller
 
         $order = Order::with('orderItems')->where('id', $orderId)->firstOrFail();
         
-        $orderStatus = $order->status;
-        
-        if($orderStatus == 'pending') {
-            $order->orderItems()->update($validated);
-            
-            if (isset($validated['quantity'])) {
-                $this->updateOrderTotal($order);
-            }
-
-            $order->load(['orderItems.product', 'orderItems.color', 'orderItems.size']);
-
-            return ResponseHelper::success(new OrderResource($order),'Order updated successfully');
-        } else {
-            return ResponseHelper::error('Cannot update order. Current status: ' . $orderStatus);
+        if($order->status != 'pending') {
+            throw new OrderStatusException('update', $order->status, $order->id, $order->user_id);
         }
+
+        $order->orderItems()->update($validated);
+        
+        if (isset($validated['quantity'])) {
+            $this->updateOrderTotal($order);
+        }
+
+        $order->load(['orderItems.product', 'orderItems.color', 'orderItems.size']);
+
+        return ResponseHelper::success(new OrderResource($order), 'Order updated successfully');
     }
 
     /**
@@ -125,12 +133,13 @@ class OrderController extends Controller
     {
         $order = Order::where('id', $orderId)->firstOrFail();
         
-        if($order->status == 'pending') {
-            $order->delete();
-            return ResponseHelper::successMessage('Order canceled successfully');
-        } else {
-            return ResponseHelper::error('Cannot cancel order. Current status: ' . $order->status);
-        } 
+        if($order->status != 'pending') {
+            throw new OrderStatusException('cancel', $order->status, $order->id, $order->user_id);
+        }
+
+        $order->delete();
+
+        return ResponseHelper::successMessage('Order canceled successfully');
     }
 
     /**
@@ -147,7 +156,7 @@ class OrderController extends Controller
         }
 
         if ($order->status != 'pending') {
-            return ResponseHelper::error('Cannot remove item from order. Current status: ' . $order->status);
+            throw new OrderStatusException('remove item from', $order->status, $order->id, $order->user_id);
         }
 
         $orderItem->delete();
@@ -155,6 +164,6 @@ class OrderController extends Controller
         
         $order->load(['orderItems.product', 'orderItems.color', 'orderItems.size']);
 
-        return ResponseHelper::success(new OrderResource($order),'Order item removed successfully');
+        return ResponseHelper::success(new OrderResource($order), 'Order item removed successfully');
     }
 }
