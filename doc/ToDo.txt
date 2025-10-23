@@ -1,0 +1,51 @@
+1-home page:
+    1-api for return the categories  :Done     test:done  
+    2-api for return products of specified category :Done                test:done
+    3-api for search about the product  :Done               test:done
+    4-api for return product details   :Done                             test:done
+    5-api for return the colors&sizes of specified product    :Done          (هنا يمكن ان ندمج 4 مع 5)
+    6-test    done
+2-category page:
+    1-api for filter                     done
+    2-api for return product details          done
+    3-api for return the colors&sizes of specified product        done                 (هنا يمكن ان ندمج 3 مع 4)	 
+    4-test     done
+3-Product Detail Page:
+    1-api for add  product to the cart
+    2-api for return the products of specified category
+    3-api to return all user's cart elements with price
+    4-test
+4-Cart Page:
+    1-api for update the quantity with auto update the price
+    2-api for delete element from the cart with auto update all cost
+    3-api for checkout(return order details before submit
+    4-test
+5-Checkout Page:
+    1-api for submit the order (move all cartItem to orderItem)
+    2-api for reurn all order details with order id ,products,price,
+    3-api to return all user's cart elements with price
+    4-test
+6-rename the project & puch to git repo
+
+
+
+
+user action:
+	-for order:
+		-submit new order
+		-get all orders
+		-get order by id
+		-cancel order
+	-for product:
+		-search about product
+		-get filtered products
+admin action:
+	-for order:
+		-show all order
+		-approve or reject order
+	-for product:
+		-edit product
+		-add colors or sizes to product 
+		-
+		
+	

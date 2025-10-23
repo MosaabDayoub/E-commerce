@@ -1,0 +1,67 @@
+1. Home Page
+
+User sees: Categories list, featured and new products, search bar.
+
+Actions:
+
+-Click a category → go to Category Page.
+
+-Click a product → go to Product Detail Page.
+
+-Use the search bar → go to Search Results Page.
+
+2. Category Page
+
+User sees: All products within the chosen category, with filter options (color, size, price).
+
+Actions:
+
+-Apply filters → product list updates based on selected filters.
+
+-Click a product → go to Product Detail Page.
+
+-Go back to the homepage → return to Home Page.
+
+3. Product Detail Page
+
+User sees: Product image, name, price, description, available colors, sizes, and quantity selector.
+
+Actions:
+
+-Choose color/size and quantity → add product to Cart (remain on page or go to Cart Page).
+
+-Go back to category → return to Category Page.
+
+4. Cart Page
+
+User sees: All cart items with color, size, quantity, and price, plus total cost.
+
+Actions:
+
+-Update quantity → total updates automatically.
+
+-Remove item → item disappears from cart.
+
+-Proceed to checkout → go to Checkout Page.
+
+-Continue shopping → return to Home Page or Category Page.
+
+5. Checkout Page
+
+User sees: Complete order summary, personal details form, and payment method options.
+
+Actions:
+
+-Confirm order → create Order, convert all CartItems to OrderItems, then go to Order Confirmation Page.
+
+-Back to cart → return to Cart Page.
+
+6. Order Confirmation Page
+
+User sees: Success message with order number, products, total price, and estimated shipping time.
+
+Actions:
+
+-Back to homepage → return to Home Page.
+
+-View order history → go to Order History Page.

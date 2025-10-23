@@ -1,0 +1,19 @@
+Admin:
+
+		 category:
+			   1-add category
+			   2-show categories
+         	 Product: 
+                           1-add product with color and size               done
+                           2-remove product                done
+                           3-edit product with add new color or size or remove color or size of product           done
+                           4-display products&products of user              done
+
+		  Cart:
+                          1-display carts
+                          2-display cart of user with items
+
+		 order:
+			  1-show orders
+			  2-approve order
+		

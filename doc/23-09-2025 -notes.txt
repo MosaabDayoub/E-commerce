@@ -1,0 +1,36 @@
+1- $products = Product::whereHas('category', function ($q) use ($name) {                  تجلب المنتجات الخاصة بفئة معينة
+    $q->where('name', $name);                                                         
+})->get(); 
+
+
+
+2-$products = Product::query()       //كويري لانشاء استعلام لكن لا ينفذ                                   
+    // فلترة حسب الفئة
+    ->when($request->category_id, fn($q, $category) => $q->where('category_id', $category))   وين تختبر بالمعامل الاول اذا موجود اذا كانت قيمته ترو تنتقل الى المعامل الثاني لتنفيذه والمعامل الثاني هو عبارة كيو التي تمثل اختصار للاستعلام ويمرر اليها القيمة الناتجة من الوين والتي هي من الريكويست بعدها يطبق شرط عليها 
+    
+    // فلترة حسب اللون
+    ->when($request->color, fn($q, $color) => 
+        $q->whereHas('colors', fn($q2) => $q2->where('name', $color))
+    )
+    
+    // فلترة حسب الحجم
+    ->when($request->size, fn($q, $size) => 
+        $q->whereHas('sizes', fn($q2) => $q2->where('name', $size))
+    )
+
+3-for get request:params ,for post request:body
+4-لاداعي لانشاء تابع لعرض المنتجات كلها واخر لعرضها مفلترة تابع ال ايندكس ممكن ان يتم استخدامه للغرضين عن طريق التشييك على البارام  
+5-لفصل ملف الراوت بالنسبة للمستخدم والادمن ننشء ملفين لكل منهما ومن اجل اضافة المسار نذهب الى فولدير البوتستراب.ملف الاب  نكتب هنا تحت ال هيلث:
+		then: function(){
+          		  Route::middleware(['api'])
+                         		   ->prefix('api-user')
+                        		    ->name('user.')
+                          		  ->group(base_path('routes/api_user.php'));
+
+
+           		 Route::middleware('api')
+                          		  ->prefix('api-admin')
+                            		  ->name('admin.')
+                            		  ->group(base_path('routes/api_admin.php'));
+                             }
+6-                                                                         
